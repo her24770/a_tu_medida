@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    ports:
+      - "4321:4321"
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7
+    volumes:
+      - a_tu_medida_mongodb:/data/db
+    restart: unless-stopped
+
+volumes:
+  a_tu_medida_mongodb:
