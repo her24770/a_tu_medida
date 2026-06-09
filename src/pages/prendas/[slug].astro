@@ -1,0 +1,58 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import GaleriaImagenes from '@/components/GaleriaImagenes.astro';
+import { connectDB } from '@/lib/db';
+import { Prenda } from '@/models/Prenda';
+import type { Prenda as TPrenda } from '@/types/prenda';
+
+const { slug } = Astro.params;
+
+await connectDB();
+const prenda = await Prenda.findOne({ slug, disponible: true }).lean() as unknown as TPrenda | null;
+
+if (!prenda) {
+  return Astro.redirect('/catalogo');
+}
+---
+
+<Layout title={prenda.nombre}>
+  <article>
+    <GaleriaImagenes imagenes={prenda.imagenes} />
+
+    <div>
+      <h1>{prenda.nombre}</h1>
+      <span>{prenda.tipo}</span>
+      <span>{prenda.categoria}</span>
+      <p>{prenda.descripcion}</p>
+
+      {prenda.colores.length > 0 && (
+        <div>
+          <h2>Colores</h2>
+          <div>
+            {prenda.colores.map(color => (
+              <span style={`background-color: ${color.hex}`} title={color.nombre} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {prenda.telas.length > 0 && (
+        <div>
+          <h2>Telas</h2>
+          <ul>{prenda.telas.map(tela => <li>{tela}</li>)}</ul>
+        </div>
+      )}
+
+      {prenda.caracteristicas.length > 0 && (
+        <div>
+          <h2>Características</h2>
+          <ul>{prenda.caracteristicas.map(c => <li>{c}</li>)}</ul>
+        </div>
+      )}
+
+      {prenda.tiempoEntrega && (
+        <p>Tiempo de entrega: {prenda.tiempoEntrega}</p>
+      )}
+    </div>
+  </article>
+</Layout>

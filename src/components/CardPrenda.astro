@@ -1,0 +1,21 @@
+---
+import type { Prenda } from '@/types/prenda';
+
+interface Props {
+  prenda: Prenda;
+}
+
+const { prenda } = Astro.props;
+const imagen = [...prenda.imagenes].sort((a, b) => a.orden - b.orden)[0];
+---
+
+<article>
+  {imagen
+    ? <img src={imagen.url} alt={imagen.alt} />
+    : <div>Sin imagen</div>
+  }
+  <h3>{prenda.nombre}</h3>
+  <span>{prenda.tipo}</span>
+  <span>{prenda.categoria}</span>
+  <a href={`/prendas/${prenda.slug}`}>Ver detalle</a>
+</article>

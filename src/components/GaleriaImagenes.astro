@@ -1,0 +1,22 @@
+---
+import type { Imagen } from '@/types/prenda';
+
+interface Props {
+  imagenes: Imagen[];
+}
+
+const { imagenes } = Astro.props;
+const ordenadas = [...imagenes].sort((a, b) => a.orden - b.orden);
+const [principal, ...miniaturas] = ordenadas;
+---
+
+<div>
+  {principal && <img src={principal.url} alt={principal.alt} />}
+  {miniaturas.length > 0 && (
+    <div>
+      {miniaturas.map(img => (
+        <img src={img.url} alt={img.alt} />
+      ))}
+    </div>
+  )}
+</div>
