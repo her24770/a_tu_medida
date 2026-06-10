@@ -78,6 +78,7 @@ const seedAll = db.transaction(() => {
   seedServicio.run('Trajes Semiformales',      'Conjuntos elegantes para graduaciones, bautizos, cumpleaños o cualquier ocasión que merezca algo especial.',             'formal',   5);
   seedServicio.run('Pantalones y Blusas',      'Prendas básicas confeccionadas a tu cuerpo: la diferencia entre "sirve" y "queda perfecto".',                           'scissors', 6);
   seedServicio.run('Ajustes y Reparaciones',   'Adaptamos y renovamos la ropa que ya tenés. Cambios de talla, largos, cierres o rediseños completos.',                  'tool',     7);
+  seedServicio.run('¿Algo más en mente?',      'Disfraces, trajes de teatro, prendas de época, algo completamente distinto... Si se puede confeccionar a mano, lo conversamos. Escribime y vemos las posibilidades juntos.', 'chat', 8);
 });
 
 seedAll();

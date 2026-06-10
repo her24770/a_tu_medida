@@ -33,6 +33,14 @@ const { title, description = SITE.descripcion } = Astro.props;
   </body>
 </html>
 
+<script>
+  const observer = new IntersectionObserver(
+    entries => entries.forEach(e => e.target.classList.toggle('visible', e.isIntersecting)),
+    { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+  );
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
 <style is:global>
   /* ── Variables ─────────────────────────────────────────── */
   :root {
@@ -41,6 +49,7 @@ const { title, description = SITE.descripcion } = Astro.props;
     --ink:              #111111;
     --ink-soft:         #5b5b5b;
     --line:             rgba(0,0,0,.12);
+    --accent:           #b8956a;
     --nav-scrolled-bg:  rgba(246,243,238,.85);
     --card-radius:      16px;
     --float-amp:        12px;
@@ -55,7 +64,22 @@ const { title, description = SITE.descripcion } = Astro.props;
     --ink:              #f0f0f0;
     --ink-soft:         #999999;
     --line:             rgba(255,255,255,.12);
+    --accent:           #c9a97a;
     --nav-scrolled-bg:  rgba(17,17,17,.85);
+  }
+
+  /* ── Reveal on scroll ─────────────────────────────────── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity  .65s ease                          var(--reveal-delay, 0ms),
+      transform .65s cubic-bezier(.2,.7,.2,1)     var(--reveal-delay, 0ms);
+  }
+  .reveal:not(.visible) { pointer-events: none; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { transition: none !important; opacity: 1 !important; transform: none !important; }
   }
 
   /* ── Reset base ────────────────────────────────────────── */
