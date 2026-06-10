@@ -10,15 +10,13 @@ export interface Color {
   hex: string;
 }
 
-export type Categoria = 'noche' | 'civil' | 'quinceañera' | 'casual' | 'playa';
-
 export interface Prenda {
-  _id: string;
+  id: string;
   nombre: string;
   slug: string;
   descripcion: string;
   tipo: string;
-  categoria: Categoria;
+  categoria: string;
   destacado: boolean;
   disponible: boolean;
   imagenes: Imagen[];

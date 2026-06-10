@@ -1,19 +1,18 @@
 ---
-import type { Categoria } from '@/types/prenda';
+import type { Categoria } from '@/lib/categorias';
 
 interface Props {
-  categoriaActual?: Categoria;
+  categorias: Categoria[];
+  categoriaActual?: string;
   tipoActual?: string;
 }
 
-const { categoriaActual, tipoActual } = Astro.props;
+const { categorias, categoriaActual, tipoActual } = Astro.props;
 
-const categorias: Categoria[] = ['noche', 'civil', 'quinceañera', 'casual', 'playa'];
-
-function urlFiltro(categoria?: Categoria) {
+function urlFiltro(slug?: string) {
   const params = new URLSearchParams();
   if (tipoActual) params.set('tipo', tipoActual);
-  if (categoria) params.set('categoria', categoria);
+  if (slug) params.set('categoria', slug);
   const qs = params.toString();
   return `/catalogo${qs ? `?${qs}` : ''}`;
 }
@@ -23,10 +22,10 @@ function urlFiltro(categoria?: Categoria) {
   <a href={urlFiltro()}>Todas</a>
   {categorias.map(cat => (
     <a
-      href={urlFiltro(cat)}
-      aria-current={categoriaActual === cat ? 'page' : undefined}
+      href={urlFiltro(cat.slug)}
+      aria-current={categoriaActual === cat.slug ? 'page' : undefined}
     >
-      {cat}
+      {cat.nombre}
     </a>
   ))}
 </nav>

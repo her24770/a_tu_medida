@@ -1,19 +1,9 @@
 import type { APIRoute } from 'astro';
-import mongoose from 'mongoose';
-import { connectDB } from '@/lib/db';
-import { Prenda } from '@/models/Prenda';
+import { getPrendaById } from '@/lib/prendas';
 
 export const GET: APIRoute = async ({ params }) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(params.id!)) {
-      return new Response(JSON.stringify({ error: 'ID inválido' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    await connectDB();
-    const prenda = await Prenda.findById(params.id).lean();
+    const prenda = getPrendaById(params.id!);
 
     if (!prenda) {
       return new Response(JSON.stringify({ error: 'Prenda no encontrada' }), {

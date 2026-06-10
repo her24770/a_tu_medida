@@ -1,0 +1,112 @@
+---
+import FloatingCard from './FloatingCard.astro';
+
+const cards = [
+  { src: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80', label: 'diseño 01', cardClass: 'cm1' },
+  { src: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80', label: 'diseño 03', cardClass: 'cm2' },
+  { src: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&q=80', label: 'diseño 04', cardClass: 'cm3' },
+  { src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=500&q=80', label: 'diseño 06', cardClass: 'cm4' },
+];
+---
+
+<header class="hero-m">
+
+  <!-- Bloque A: título -->
+  <section class="m-title">
+    <div class="eyebrow m-rise">Diseñadora de modas</div>
+    <h1 class="title m-rise">A tu<br /><span class="thin">medida</span></h1>
+  </section>
+
+  <!-- Bloque B: cifras + foto -->
+  <section class="m-figure">
+    <div class="m-stats m-rise">
+      <div class="stat"><div class="num">+8</div><div class="lbl">años de experiencia</div></div>
+      <div class="stat"><div class="num">+500</div><div class="lbl">piezas hechas a medida</div></div>
+      <div class="stat"><div class="num">100%</div><div class="lbl">confección a mano</div></div>
+    </div>
+    <div class="m-model m-rise">
+      <img src="/assets/modelo.png" alt="Diseño a medida — vestido de gala" />
+    </div>
+  </section>
+
+  <!-- Bloque C: tarjetas + eslogan -->
+  <section class="m-cards">
+    {cards.map(c => <FloatingCard {...c} />)}
+    <div class="m-slogan m-rise">
+      <p class="tagline">Materializamos tus ideas.</p>
+      <p class="bio">Cada prenda nace de una conversación: tu historia, tu cuerpo y tu ocasión, traducidos en una pieza única, confeccionada a mano.</p>
+    </div>
+  </section>
+
+</header>
+
+<style is:global>
+  .hero-m { display: none; }
+
+  @media (max-width: 880px) {
+    .hero-m { display: block; max-width: 560px; margin: 0 auto; }
+
+    .m-rise {
+      opacity: 1; transform: none;
+      transition: opacity .9s ease, transform .9s cubic-bezier(.2,.7,.2,1);
+    }
+    body:not(.loaded) .m-rise { opacity: 0; transform: translateY(16px); transition: none; }
+
+    /* Bloque A */
+    .m-title {
+      min-height: 44vh;
+      padding: 104px 26px 80px;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      background-color: var(--bg);
+    }
+    .m-title .eyebrow { color: var(--ink-soft); }
+    .m-title .title   { color: var(--ink); font-size: clamp(64px, 22vw, 120px); margin-top: 14px; }
+    .m-title .title .thin { color: var(--ink-soft); }
+
+    /* Bloque B */
+    .m-figure {
+      position: relative;
+      display: grid; grid-template-columns: minmax(120px, 0.9fr) 1.4fr;
+      align-items: center; gap: 8px;
+      padding: 12px 16px 16px; min-height: 78vh; overflow: hidden;
+      background-color: var(--bg);
+    }
+    .m-stats { display: flex; flex-direction: column; gap: 34px; z-index: 2; }
+    .m-stats .stat .num { font-size: clamp(34px, 11vw, 52px); font-weight: 700; letter-spacing: -.02em; line-height: 1; color: var(--ink); }
+    .m-stats .stat .lbl { font-size: 13.5px; color: var(--ink-soft); margin-top: 9px; line-height: 1.3; }
+    .m-model {
+      justify-self: end; align-self: end;
+      width: 118%; margin-right: -16%;
+      display: flex; align-items: flex-end; justify-content: flex-end;
+    }
+    .m-model img { width: 100%; height: auto; display: block; filter: drop-shadow(0 30px 50px rgba(0,0,0,.14)); }
+
+    /* Bloque C */
+    .m-cards {
+      position: relative; min-height: 90vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 20px 90px; overflow: hidden;
+      background-color: var(--bg);
+    }
+    .m-slogan { position: relative; z-index: 30; text-align: center; max-width: 360px; }
+    .m-slogan .tagline { font-size: clamp(26px, 8vw, 40px); line-height: 1.15; font-weight: 600; color: var(--ink); }
+    .m-slogan .bio { font-size: 15.5px; line-height: 1.6; color: var(--ink-soft); margin: 16px auto 0; max-width: 340px; }
+
+    /* Posiciones tarjetas móvil */
+    .m-cards .card { position: absolute; }
+    .card.cm1 { top: 1%;  left: -4%;  width: 116px; height: 150px; transform: rotate(-7deg); }
+    .card.cm2 { top: 6%;  right: -4%; width: 104px; height: 134px; transform: rotate(6deg); }
+    .card.cm3 { bottom: 3%; left: -4%; width: 124px; height: 160px; transform: rotate(5deg); }
+    .card.cm4 { bottom: 1%; right: -4%; width: 134px; height: 172px; transform: rotate(-6deg); }
+    .card.cm1 .float { animation-duration: calc(6.6s / var(--float-speed)); }
+    .card.cm2 .float { animation-duration: calc(7.8s / var(--float-speed)); animation-delay: -1.4s; }
+    .card.cm3 .float { animation-duration: calc(7.1s / var(--float-speed)); animation-delay: -2.2s; }
+    .card.cm4 .float { animation-duration: calc(8.4s / var(--float-speed)); animation-delay: -.8s; }
+  }
+
+  @media (max-width: 420px) {
+    .m-figure { grid-template-columns: minmax(104px, .85fr) 1.35fr; min-height: 72vh; }
+    .m-model  { width: 124%; margin-right: -20%; }
+    .card.cm1, .card.cm2 { width: 96px; height: 124px; }
+  }
+</style>

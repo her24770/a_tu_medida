@@ -1,7 +1,7 @@
 /// <reference types="astro/client" />
 
 interface ImportMetaEnv {
-  readonly MONGODB_URI: string;
+  readonly DB_PATH: string;
   readonly ADMIN_PASSWORD: string;
   readonly ADMIN_SECRET: string;
   readonly R2_ACCOUNT_ID: string;

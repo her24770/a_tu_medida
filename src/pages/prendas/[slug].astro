@@ -1,14 +1,10 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import GaleriaImagenes from '@/components/GaleriaImagenes.astro';
-import { connectDB } from '@/lib/db';
-import { Prenda } from '@/models/Prenda';
-import type { Prenda as TPrenda } from '@/types/prenda';
+import { getPrendaBySlug } from '@/lib/prendas';
 
 const { slug } = Astro.params;
-
-await connectDB();
-const prenda = await Prenda.findOne({ slug, disponible: true }).lean() as unknown as TPrenda | null;
+const prenda = getPrendaBySlug(slug!);
 
 if (!prenda) {
   return Astro.redirect('/catalogo');

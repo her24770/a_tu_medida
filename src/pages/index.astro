@@ -1,36 +1,17 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import CardPrenda from '@/components/CardPrenda.astro';
-import { connectDB } from '@/lib/db';
-import { Prenda } from '@/models/Prenda';
-import type { Prenda as TPrenda } from '@/types/prenda';
+import Hero from '@/components/home/Hero.astro';
+import HeroMobile from '@/components/home/HeroMobile.astro';
+import Destacados from '@/components/home/Destacados.astro';
+import Contacto from '@/components/home/Contacto.astro';
+import { getDestacados } from '@/lib/prendas';
 
-await connectDB();
-const destacados = await Prenda.find({ destacado: true, disponible: true })
-  .sort({ creadoEn: -1 })
-  .lean() as unknown as TPrenda[];
+const destacados = getDestacados();
 ---
 
 <Layout title="Inicio">
-  <section id="hero">
-    <h1>A Tu Medida</h1>
-    <p>Prendas 100% a la medida, diseñadas para ti.</p>
-    <a href="/catalogo">Ver catálogo</a>
-  </section>
-
-  {destacados.length > 0 && (
-    <section id="destacados">
-      <h2>Destacados</h2>
-      <div>
-        {destacados.map(prenda => <CardPrenda prenda={prenda} />)}
-      </div>
-    </section>
-  )}
-
-  <section id="contacto">
-    <h2>Contacto</h2>
-    <p>WhatsApp: </p>
-    <p>Instagram: </p>
-    <p>Email: </p>
-  </section>
+  <Hero />
+  <HeroMobile />
+  <Destacados prendas={destacados} />
+  <Contacto />
 </Layout>

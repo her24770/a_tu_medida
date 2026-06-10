@@ -1,0 +1,18 @@
+---
+import CardPrenda from '@/components/CardPrenda.astro';
+import type { Prenda } from '@/types/prenda';
+
+interface Props {
+  prendas: Prenda[];
+}
+const { prendas } = Astro.props;
+---
+
+{prendas.length > 0 && (
+  <section id="destacados">
+    <h2>Destacados</h2>
+    <div class="grid">
+      {prendas.map(prenda => <CardPrenda prenda={prenda} />)}
+    </div>
+  </section>
+)}

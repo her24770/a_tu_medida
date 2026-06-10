@@ -12,6 +12,9 @@
     "@astrojs/node": "^9.0.0",
     "@aws-sdk/client-s3": "^3.600.0",
     "astro": "^5.0.0",
-    "mongoose": "^8.0.0"
+    "better-sqlite3": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0"
   }
 }

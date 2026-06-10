@@ -1,0 +1,231 @@
+---
+import FloatingCard from './FloatingCard.astro';
+
+const cards = [
+  { src: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80', label: 'diseño 01', cardClass: 'c1' },
+  { src: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500&q=80', label: 'diseño 02', cardClass: 'c2' },
+  { src: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80', label: 'diseño 03', cardClass: 'c3' },
+  { src: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&q=80', label: 'diseño 04', cardClass: 'c4' },
+  { src: 'https://images.unsplash.com/photo-1502716119720-b23a93e5fe1b?w=400&q=80', label: 'diseño 05', cardClass: 'c5' },
+  { src: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=500&q=80', label: 'diseño 06', cardClass: 'c6' },
+];
+---
+
+<header class="hero">
+  <div class="hero-inner">
+
+    {cards.map(c => <FloatingCard {...c} />)}
+
+    <div class="model">
+      <img src="/assets/modelo.png" alt="Diseño a medida — vestido de gala" />
+    </div>
+
+    <div class="copy">
+      <div class="eyebrow">Diseñadora de modas</div>
+      <h1 class="title">A tu<br /><span class="thin">medida</span></h1>
+      <p class="tagline">Materializamos tus ideas.</p>
+      <p class="bio">Cada prenda nace de una conversación: tu historia, tu cuerpo y tu ocasión, traducidos en una pieza única, confeccionada a mano.</p>
+      <div class="stats">
+        <div class="stat"><div class="num">+8</div><div class="lbl">años de<br />experiencia</div></div>
+        <div class="stat"><div class="num">+500</div><div class="lbl">piezas hechas<br />a medida</div></div>
+        <div class="stat"><div class="num">100%</div><div class="lbl">confección<br />a mano</div></div>
+      </div>
+    </div>
+
+    <div class="socials">
+      <a href="#">Instagram</a><span class="sep"></span>
+      <a href="#">Pinterest</a><span class="sep"></span>
+      <a href="#">WhatsApp</a>
+    </div>
+
+    <div class="year">2026</div>
+
+    <div class="scroll-hint"><div class="line"></div></div>
+
+  </div>
+</header>
+
+<style is:global>
+  /* ── Hero escritorio ──────────────────────────────────── */
+  .hero {
+    position: relative;
+    min-height: 100svh; width: 100%;
+    max-width: var(--maxw); margin: 0 auto;
+    perspective: 1600px; overflow: hidden;
+    display: block;
+  }
+  .hero-inner { position: absolute; inset: 0; transform-style: preserve-3d; }
+
+  /* Imagen del modelo */
+  .model {
+    position: absolute; left: 50%; bottom: 0;
+    height: 92%; max-height: 980px;
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 20; pointer-events: none;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+    transition: opacity 1.4s ease .2s, transform 1.4s cubic-bezier(.16,.84,.3,1) .2s;
+  }
+  body:not(.loaded) .model {
+    opacity: 0; transform: translateX(-50%) translateY(34px) scale(1.02); transition: none;
+  }
+  .model img {
+    height: 100%; width: auto;
+    object-fit: contain; object-position: bottom center;
+    filter: drop-shadow(0 40px 60px rgba(0,0,0,.14));
+  }
+
+  /* Bloque de texto */
+  .copy {
+    position: absolute;
+    left: clamp(20px, 5vw, 64px); top: 50%; transform: translateY(-50%);
+    z-index: 30; max-width: 540px;
+  }
+  .copy > * {
+    opacity: 1; transform: translateY(0);
+    transition: opacity 1s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1);
+  }
+  body:not(.loaded) .copy > * { opacity: 0; transform: translateY(18px); transition: none; }
+  .copy > *:nth-child(1) { transition-delay: .45s; }
+  .copy > *:nth-child(2) { transition-delay: .58s; }
+  .copy > *:nth-child(3) { transition-delay: .71s; }
+  .copy > *:nth-child(4) { transition-delay: .84s; }
+  .copy > *:nth-child(5) { transition-delay: .97s; }
+
+  .eyebrow {
+    font-size: 13px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 700;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before { content: ""; width: 28px; height: 1px; background: currentColor; display: inline-block; }
+
+  .title {
+    font-size: clamp(54px, 7.6vw, 108px);
+    line-height: .92; letter-spacing: -.035em; font-weight: 700;
+    color: var(--ink); margin: 18px 0 0;
+  }
+  .title .thin { font-weight: 300; }
+
+  .tagline {
+    font-size: clamp(18px, 2.2vw, 24px);
+    line-height: 1.3; color: var(--ink); font-weight: 500;
+    margin-top: 20px; max-width: 380px;
+  }
+  .bio {
+    font-size: 15px; line-height: 1.55; color: var(--ink-soft);
+    margin-top: 16px; max-width: 360px;
+  }
+  @media (max-height: 760px) { .copy .bio { display: none; } }
+
+  /* Stats */
+  .stats { display: flex; gap: clamp(20px, 3vw, 40px); margin-top: 38px; }
+  .stat .num { font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1; color: var(--ink); }
+  .stat .lbl { font-size: 12.5px; color: var(--ink-soft); margin-top: 7px; line-height: 1.3; }
+
+  /* Redes */
+  .socials {
+    position: absolute; left: clamp(20px, 5vw, 64px); bottom: 30px;
+    display: flex; align-items: center; gap: 16px; z-index: 30;
+    opacity: 1; transition: opacity 1s ease 1.2s, transform 1s ease 1.2s;
+  }
+  body:not(.loaded) .socials { opacity: 0; transform: translateY(12px); transition: none; }
+  .socials a {
+    color: var(--ink-soft); text-decoration: none;
+    font-size: 13px; font-weight: 600; letter-spacing: .04em; transition: color .2s;
+  }
+  .socials a:hover { color: var(--ink); }
+  .socials .sep { width: 1px; height: 12px; background: var(--line); }
+
+  .year {
+    position: absolute; right: clamp(20px, 5vw, 64px); bottom: 30px;
+    font-size: 13px; color: var(--ink-soft); z-index: 30;
+    opacity: 1; transition: opacity 1s ease 1.25s;
+  }
+  body:not(.loaded) .year { opacity: 0; transition: none; }
+
+  /* ── Tarjetas flotantes ───────────────────────────────── */
+  .card { position: absolute; z-index: 15; will-change: transform; }
+  .card .enter {
+    opacity: 1; transform: none; filter: blur(0);
+    transition: opacity 1s ease, transform 1.1s cubic-bezier(.16,.84,.3,1), filter 1.1s ease;
+  }
+  body:not(.loaded) .card .enter {
+    opacity: 0; transform: translateY(28px) scale(.9); filter: blur(6px); transition: none;
+  }
+  .card .float { animation: floatBob calc(7s / var(--float-speed)) ease-in-out infinite alternate; }
+  .card .frame {
+    position: relative; width: 100%; height: 100%;
+    border-radius: var(--card-radius); overflow: hidden;
+    background: linear-gradient(135deg, #c9d3e6, #e9d4d9 55%, #d8c3b0);
+    box-shadow: 0 18px 40px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.08);
+    border: 1px solid rgba(255,255,255,.5);
+  }
+  .card .frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .card .cap {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 8px 10px; font-size: 11px; color: #fff;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: .02em;
+    background: linear-gradient(transparent, rgba(0,0,0,.45));
+    opacity: 0; transition: opacity .25s; pointer-events: none;
+  }
+  .card:hover .cap { opacity: 1; }
+
+  @keyframes floatBob {
+    0%   { transform: translateY(calc(var(--float-amp) * -1)) rotate(-.6deg); }
+    100% { transform: translateY(var(--float-amp)) rotate(.6deg); }
+  }
+
+  /* Posiciones escritorio */
+  .card.c1 { top: 12%; left: 30%;  width: 120px; height: 156px; transform: rotateY(22deg)  rotateX(6deg)  rotateZ(-7deg); }
+  .card.c2 { bottom: 1%; left: 36%;  width: 196px; height: 250px; transform: rotateY(17deg)  rotateX(3deg)  rotateZ(-5deg); z-index: 25; }
+  .card.c3 { top:  7%; right: 23%; width: 120px; height: 152px; transform: rotateY(-18deg) rotateX(-4deg) rotateZ(6deg); }
+  .card.c4 { top: 13%; right:  5%; width: 168px; height: 218px; transform: rotateY(-24deg) rotateX(5deg)  rotateZ(6deg); }
+  .card.c5 { top: 47%; right:  2%; width: 132px; height: 172px; transform: rotateY(-20deg) rotateX(-3deg) rotateZ(-5deg); }
+  .card.c6 { bottom: 7%; right:  8%; width: 196px; height: 250px; transform: rotateY(-18deg) rotateX(4deg)  rotateZ(-6deg); z-index: 25; }
+
+  /* Stagger entrada */
+  .card.c1 .enter { transition-delay: .75s, .75s, .75s; }
+  .card.c2 .enter { transition-delay: .90s, .90s, .90s; }
+  .card.c3 .enter { transition-delay: 1.05s, 1.05s, 1.05s; }
+  .card.c4 .enter { transition-delay: .82s, .82s, .82s; }
+  .card.c5 .enter { transition-delay: .98s, .98s, .98s; }
+  .card.c6 .enter { transition-delay: 1.12s, 1.12s, 1.12s; }
+
+  /* Velocidades de flotado */
+  .card.c1 .float { animation-duration: calc(6.5s / var(--float-speed)); }
+  .card.c2 .float { animation-duration: calc(8.2s / var(--float-speed)); animation-delay: -1.2s; }
+  .card.c3 .float { animation-duration: calc(7.0s / var(--float-speed)); animation-delay: -2.0s; }
+  .card.c4 .float { animation-duration: calc(7.6s / var(--float-speed)); animation-delay: -.6s; }
+  .card.c5 .float { animation-duration: calc(6.8s / var(--float-speed)); animation-delay: -2.6s; }
+  .card.c6 .float { animation-duration: calc(8.6s / var(--float-speed)); animation-delay: -1.6s; }
+
+  /* Indicador de scroll */
+  .scroll-hint {
+    position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center;
+    z-index: 30; opacity: 1; transition: opacity 1s ease 1.5s;
+  }
+  body:not(.loaded) .scroll-hint { opacity: 0; transition: none; }
+  .scroll-hint .line { width: 1px; height: 34px; background: var(--ink-soft); position: relative; overflow: hidden; }
+  .scroll-hint .line::after {
+    content: ""; position: absolute; left: 0; top: -50%; width: 100%; height: 50%;
+    background: var(--ink); animation: scrollPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes scrollPulse { 0% { top: -50%; } 60%, 100% { top: 100%; } }
+
+  @media (max-width: 880px) { .hero { display: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card .float { animation: none !important; }
+    .scroll-hint .line::after { animation: none; }
+  }
+</style>
+
+<script>
+  function cardFail(img: HTMLImageElement) {
+    img.style.display = 'none';
+    const cap = img.parentElement?.querySelector('.cap') as HTMLElement;
+    if (cap) { cap.style.opacity = '1'; cap.textContent = 'tu foto aquí'; }
+  }
+  (window as any).cardFail = cardFail;
+</script>

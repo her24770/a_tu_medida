@@ -1,0 +1,19 @@
+---
+interface Props {
+  src: string;
+  label: string;
+  cardClass: string;
+}
+const { src, label, cardClass } = Astro.props;
+---
+
+<div class:list={['card', cardClass]}>
+  <div class="enter">
+    <div class="float">
+      <div class="frame">
+        <img src={src} alt="" loading="lazy" onerror="cardFail(this)" />
+        <span class="cap">{label}</span>
+      </div>
+    </div>
+  </div>
+</div>
