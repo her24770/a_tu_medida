@@ -8,16 +8,22 @@
     <a href="/#contacto">Contáctame</a>
   </div>
   <div class="nav-actions">
-    <a href="/catalogo" class="nav-cta"><span>Ver catálogo</span></a>
     <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar tema">
       <span class="icon-light">☀</span>
       <span class="icon-dark">☾</span>
     </button>
   </div>
-  <button class="nav-burger" aria-label="Menú">
+  <button class="nav-burger" id="nav-burger" aria-label="Menú">
     <span></span><span></span><span></span>
   </button>
 </nav>
+
+<div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+  <button class="nm-close" id="nm-close" aria-label="Cerrar menú">✕</button>
+  <a href="/" class="nm-link">Inicio</a>
+  <a href="/catalogo" class="nm-link">Galería</a>
+  <a href="/#contacto" class="nm-link">Contáctame</a>
+</div>
 
 <style is:global>
   .nav {
@@ -54,15 +60,6 @@
 
   .nav-actions { display: flex; align-items: center; gap: 12px; }
 
-  .nav-cta {
-    font-size: 14.5px; font-weight: 600; color: inherit;
-    border: 1px solid currentColor; border-radius: 999px;
-    padding: 9px 18px; text-decoration: none; white-space: nowrap;
-    transition: background .2s, color .2s;
-  }
-  .nav-cta:hover { background: var(--ink); }
-  .nav-cta:hover span { color: var(--bg); }
-
   .theme-toggle {
     background: none; border: 1px solid var(--line); border-radius: 999px;
     padding: 6px 12px; cursor: pointer; color: var(--ink);
@@ -74,7 +71,38 @@
   [data-theme="dark"] .icon-light { display: none; }
   [data-theme="dark"] .icon-dark  { display: inline; }
 
-  .nav-burger { display: none; }
+  .nav-burger {
+    display: none;
+    background: none; border: none; cursor: pointer;
+    padding: 4px; color: var(--ink);
+  }
+  .nav-burger span {
+    display: block; width: 24px; height: 2px;
+    background: currentColor; margin: 5px 0;
+    transition: transform .3s ease, opacity .3s ease;
+  }
+  .nav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-burger.open span:nth-child(2) { opacity: 0; }
+  .nav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .nav-mobile {
+    display: none;
+    position: fixed; inset: 0; z-index: 48;
+    background: var(--bg);
+    flex-direction: column; align-items: center; justify-content: center; gap: 36px;
+  }
+  .nav-mobile.open { display: flex; }
+  .nm-close {
+    position: absolute; top: 24px; right: clamp(20px, 5vw, 64px);
+    background: none; border: none; cursor: pointer;
+    font-size: 22px; color: var(--ink-soft);
+  }
+  .nm-link {
+    font-size: clamp(32px, 10vw, 52px); font-weight: 700;
+    color: var(--ink); text-decoration: none; letter-spacing: -.02em;
+    transition: color .2s;
+  }
+  .nm-link:hover { color: var(--ink-soft); }
 
   body.scrolled .nav {
     background: var(--nav-scrolled-bg);
@@ -85,14 +113,8 @@
   }
 
   @media (max-width: 880px) {
-    .nav-links { display: none; }
-    .nav-cta   { display: none; }
-    .nav-burger {
-      display: flex; flex-direction: column; gap: 5px;
-      cursor: pointer; padding: 4px; background: none; border: none;
-      color: var(--ink);
-    }
-    .nav-burger span { width: 24px; height: 2px; background: currentColor; display: block; }
+    .nav-links  { display: none; }
+    .nav-burger { display: flex; flex-direction: column; }
   }
 </style>
 
@@ -121,5 +143,23 @@
     const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
+  });
+
+  // Menú móvil
+  const burger     = document.getElementById('nav-burger');
+  const mobileMenu = document.getElementById('nav-mobile');
+  const nmClose    = document.getElementById('nm-close');
+
+  function toggleMenu(open: boolean) {
+    burger?.classList.toggle('open', open);
+    mobileMenu?.classList.toggle('open', open);
+    mobileMenu?.setAttribute('aria-hidden', String(!open));
+    document.body.style.overflow = open ? 'hidden' : '';
+  }
+
+  burger?.addEventListener('click', () => toggleMenu(!burger.classList.contains('open')));
+  nmClose?.addEventListener('click', () => toggleMenu(false));
+  mobileMenu?.querySelectorAll('.nm-link').forEach(link => {
+    link.addEventListener('click', () => toggleMenu(false));
   });
 </script>

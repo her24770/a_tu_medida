@@ -54,8 +54,8 @@ const cards = [
 
     /* Bloque A */
     .m-title {
-      min-height: 44vh;
-      padding: 104px 26px 80px;
+      min-height: 36vh;
+      padding: 88px 26px 36px;
       display: flex; flex-direction: column; justify-content: flex-start;
       background-color: var(--bg);
     }
@@ -68,10 +68,10 @@ const cards = [
       position: relative;
       display: grid; grid-template-columns: minmax(120px, 0.9fr) 1.4fr;
       align-items: center; gap: 8px;
-      padding: 12px 16px 16px; min-height: 78vh; overflow: hidden;
+      padding: 12px 16px 16px; min-height: 66vh; overflow: hidden;
       background-color: var(--bg);
     }
-    .m-stats { display: flex; flex-direction: column; gap: 34px; z-index: 2; }
+    .m-stats { display: flex; flex-direction: column; gap: 22px; z-index: 2; }
     .m-stats .stat .num { font-size: clamp(34px, 11vw, 52px); font-weight: 700; letter-spacing: -.02em; line-height: 1; color: var(--ink); }
     .m-stats .stat .lbl { font-size: 13.5px; color: var(--ink-soft); margin-top: 9px; line-height: 1.3; }
     .m-model {
@@ -83,9 +83,9 @@ const cards = [
 
     /* Bloque C */
     .m-cards {
-      position: relative; min-height: 90vh;
+      position: relative; min-height: 74vh;
       display: flex; align-items: center; justify-content: center;
-      padding: 40px 20px 90px; overflow: hidden;
+      padding: 24px 20px 110px; overflow: visible;
       background-color: var(--bg);
     }
     .m-slogan { position: relative; z-index: 30; text-align: center; max-width: 360px; }
@@ -94,10 +94,10 @@ const cards = [
 
     /* Posiciones tarjetas móvil */
     .m-cards .card { position: absolute; }
-    .card.cm1 { top: 1%;  left: -4%;  width: 116px; height: 150px; transform: rotate(-7deg); }
-    .card.cm2 { top: 6%;  right: -4%; width: 104px; height: 134px; transform: rotate(6deg); }
-    .card.cm3 { bottom: 3%; left: -4%; width: 124px; height: 160px; transform: rotate(5deg); }
-    .card.cm4 { bottom: 1%; right: -4%; width: 134px; height: 172px; transform: rotate(-6deg); }
+    .card.cm1 { top: 6%;  left: 0%;   width: 108px; height: 140px; transform: rotate(-7deg); }
+    .card.cm2 { top: 8%;  right: 0%;  width: 98px;  height: 126px; transform: rotate(6deg); }
+    .card.cm3 { bottom: 8%; left: 0%; width: 116px; height: 150px; transform: rotate(5deg); }
+    .card.cm4 { bottom: 6%; right: 0%; width: 126px; height: 162px; transform: rotate(-6deg); }
     .card.cm1 .float { animation-duration: calc(6.6s / var(--float-speed)); }
     .card.cm2 .float { animation-duration: calc(7.8s / var(--float-speed)); animation-delay: -1.4s; }
     .card.cm3 .float { animation-duration: calc(7.1s / var(--float-speed)); animation-delay: -2.2s; }
@@ -105,8 +105,8 @@ const cards = [
   }
 
   @media (max-width: 420px) {
-    .m-figure { grid-template-columns: minmax(104px, .85fr) 1.35fr; min-height: 72vh; }
+    .m-figure { grid-template-columns: minmax(104px, .85fr) 1.35fr; min-height: 60vh; }
     .m-model  { width: 124%; margin-right: -20%; }
-    .card.cm1, .card.cm2 { width: 96px; height: 124px; }
+    .card.cm1, .card.cm2 { width: 88px; height: 114px; }
   }
 </style>

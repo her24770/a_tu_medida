@@ -58,7 +58,7 @@ const cards = [
 
   /* Imagen del modelo */
   .model {
-    position: absolute; left: 50%; bottom: 0;
+    position: absolute; left: 60%; bottom: 0;
     height: 92%; max-height: 980px;
     display: flex; align-items: flex-end; justify-content: center;
     z-index: 20; pointer-events: none;
@@ -69,10 +69,17 @@ const cards = [
   body:not(.loaded) .model {
     opacity: 0; transform: translateX(-50%) translateY(34px) scale(1.02); transition: none;
   }
+
+  /* Gradiente inferior para suavizar el corte de la sombra */
+  .hero::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 160px;
+    background: linear-gradient(to bottom, transparent, var(--bg));
+    z-index: 6; pointer-events: none;
+  }
   .model img {
     height: 100%; width: auto;
     object-fit: contain; object-position: bottom center;
-    filter: drop-shadow(0 40px 60px rgba(0,0,0,.14));
   }
 
   /* Bloque de texto */
