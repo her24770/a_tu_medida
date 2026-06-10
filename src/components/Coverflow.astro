@@ -93,18 +93,18 @@ const items = prendas.map(p => ({
   .cf-item {
     position: absolute;
     left: 50%;
-    bottom: 80px;
+    top: 50%;
     transform-style: preserve-3d;
     will-change: transform, filter;
   }
 
   .cf-item img {
     display: block;
-    height: min(50vh, 400px);
+    height: min(66vh, 520px);
     width: auto;
-    max-width: 28vw;
+    max-width: 40vw;
     object-fit: contain;
-    object-position: bottom center;
+    object-position: center;
     -webkit-user-drag: none;
     filter: drop-shadow(0 20px 32px rgba(0,0,0,0.13));
   }
@@ -183,9 +183,8 @@ const items = prendas.map(p => ({
   .cf-dot.is-active { background: var(--ink); width: 20px; border-radius: 99px; }
 
   @media (max-width: 600px) {
-    .cf-wrapper  { height: 65vh; min-height: 420px; }
-    .cf-item     { bottom: 60px; }
-    .cf-item img { max-width: 65vw; height: min(42vh, 300px); }
+    .cf-wrapper  { height: 70vh; min-height: 460px; }
+    .cf-item img { max-width: 74vw; height: min(56vh, 400px); }
   }
 </style>
 
@@ -251,7 +250,7 @@ const items = prendas.map(p => ({
     }
 
     function render() {
-      const gap = Math.min(stageW * 0.225, 330);
+      const gap = Math.min(stageW * 0.27, 360);
       const p   = pos;
 
       itemEls.forEach((el, i) => {
@@ -265,17 +264,17 @@ const items = prendas.map(p => ({
           return;
         }
 
-        const x     = dir * gap * Math.pow(ao, 0.86);
-        const y     = -ao * 5;
-        const scale = 1 / (1 + ao * 0.5);
-        const blur  = Math.min(ao * BLUR_UNIT, MAX_BLUR);
-        const z     = 1000 - Math.round(ao * 100);
+        const x       = dir * gap * Math.pow(ao, 0.86);
+        const scale   = 1 / (1 + ao * 0.65);
+        const blur    = Math.min(ao * BLUR_UNIT, MAX_BLUR);
+        const opacity = Math.max(0.15, 1 - ao * 0.35);
+        const z       = 1000 - Math.round(ao * 100);
 
         el.style.visibility    = 'visible';
-        el.style.opacity       = '1';
+        el.style.opacity       = String(opacity);
         el.style.filter        = `blur(${blur}px)`;
         el.style.zIndex        = String(z);
-        el.style.transform     = `translate(-50%, 0) translateX(${x}px) translateY(${y}px) scale(${scale})`;
+        el.style.transform     = `translate(-50%, -50%) translateX(${x}px) scale(${scale})`;
         el.style.pointerEvents = ao > 0.5 ? 'auto' : 'none';
       });
     }
@@ -353,7 +352,7 @@ const items = prendas.map(p => ({
       e.preventDefault();
       interacting = true;
       wheelAcc += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      if (Math.abs(wheelAcc) > 60) {
+      if (Math.abs(wheelAcc) > 120) {
         go(wheelAcc > 0 ? 1 : -1);
         wheelAcc = 0;
       }

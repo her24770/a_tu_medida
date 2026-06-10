@@ -12,6 +12,45 @@ const destacados = getDestacados();
 <Layout title="Inicio">
   <Hero />
   <HeroMobile />
+  <div class="coleccion-header">
+    <h2 class="coleccion-titulo">Colección</h2>
+    <a href="/catalogo" class="coleccion-ver-mas">Ver más →</a>
+  </div>
   <Coverflow prendas={destacados} autoplay dots />
   <Contacto />
 </Layout>
+
+<style>
+  .coleccion-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 48px 40px 0;
+    max-width: var(--maxw);
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .coleccion-titulo {
+    font-family: var(--font);
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .coleccion-ver-mas {
+    font-family: var(--font);
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .coleccion-ver-mas:hover { color: var(--ink); }
+
+  @media (max-width: 600px) {
+    .coleccion-header { padding: 36px 20px 0; }
+  }
+</style>
