@@ -1,5 +1,6 @@
 ---
 import FloatingCard from './FloatingCard.astro';
+import { SITE } from '@/config';
 
 const cards = [
   { src: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80', label: 'diseño 01', cardClass: 'cm1' },
@@ -13,15 +14,15 @@ const cards = [
 
   <!-- Bloque A: título -->
   <section class="m-title">
-    <div class="eyebrow m-rise">Diseñadora de modas</div>
+    <div class="eyebrow m-rise">{SITE.eyebrow}</div>
     <h1 class="title m-rise">A tu<br /><span class="thin">medida</span></h1>
   </section>
 
   <!-- Bloque B: cifras + foto -->
   <section class="m-figure">
     <div class="m-stats m-rise">
-      <div class="stat"><div class="num">+8</div><div class="lbl">años de experiencia</div></div>
-      <div class="stat"><div class="num">+500</div><div class="lbl">piezas hechas a medida</div></div>
+      <div class="stat"><div class="num">+20</div><div class="lbl">años de experiencia</div></div>
+      <div class="stat"><div class="num">Z.3</div><div class="lbl">Ciudad de Guatemala</div></div>
       <div class="stat"><div class="num">100%</div><div class="lbl">confección a mano</div></div>
     </div>
     <div class="m-model m-rise">
@@ -33,8 +34,8 @@ const cards = [
   <section class="m-cards">
     {cards.map(c => <FloatingCard {...c} />)}
     <div class="m-slogan m-rise">
-      <p class="tagline">Materializamos tus ideas.</p>
-      <p class="bio">Cada prenda nace de una conversación: tu historia, tu cuerpo y tu ocasión, traducidos en una pieza única, confeccionada a mano.</p>
+      <p class="tagline">{SITE.tagline}</p>
+      <p class="bio">Diseño y confecciono ropa a medida: vestidos de novia, trajes de danza, uniformes, prendas de gala, ropa casual y más. Todo hecho a mano, desde cero, según tus medidas exactas.</p>
     </div>
   </section>
 

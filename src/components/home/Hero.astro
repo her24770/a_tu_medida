@@ -1,5 +1,6 @@
 ---
 import FloatingCard from './FloatingCard.astro';
+import { SITE, WHATSAPP_URL } from '@/config';
 
 const cards = [
   { src: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80', label: 'diseño 01', cardClass: 'c1' },
@@ -21,21 +22,21 @@ const cards = [
     </div>
 
     <div class="copy">
-      <div class="eyebrow">Diseñadora de modas</div>
+      <div class="eyebrow">{SITE.eyebrow}</div>
       <h1 class="title">A tu<br /><span class="thin">medida</span></h1>
-      <p class="tagline">Materializamos tus ideas.</p>
-      <p class="bio">Cada prenda nace de una conversación: tu historia, tu cuerpo y tu ocasión, traducidos en una pieza única, confeccionada a mano.</p>
+      <p class="tagline">{SITE.tagline}</p>
+      <p class="bio">Diseño y confecciono ropa a medida: vestidos de novia, trajes de danza, uniformes, prendas de gala, ropa casual y más. Todo hecho a mano, desde cero, según tus medidas exactas.</p>
       <div class="stats">
-        <div class="stat"><div class="num">+8</div><div class="lbl">años de<br />experiencia</div></div>
-        <div class="stat"><div class="num">+500</div><div class="lbl">piezas hechas<br />a medida</div></div>
+        <div class="stat"><div class="num">+20</div><div class="lbl">años de<br />experiencia</div></div>
+        <div class="stat"><div class="num">Z.3</div><div class="lbl">Ciudad de<br />Guatemala</div></div>
         <div class="stat"><div class="num">100%</div><div class="lbl">confección<br />a mano</div></div>
       </div>
     </div>
 
     <div class="socials">
-      <a href="#">Instagram</a><span class="sep"></span>
-      <a href="#">Pinterest</a><span class="sep"></span>
-      <a href="#">WhatsApp</a>
+      <a href={WHATSAPP_URL} target="_blank" rel="noopener" class="socials-wa">
+        WhatsApp — {SITE.whatsappDisplay}
+      </a>
     </div>
 
     <div class="year">2026</div>
@@ -136,12 +137,14 @@ const cards = [
     opacity: 1; transition: opacity 1s ease 1.2s, transform 1s ease 1.2s;
   }
   body:not(.loaded) .socials { opacity: 0; transform: translateY(12px); transition: none; }
-  .socials a {
-    color: var(--ink-soft); text-decoration: none;
-    font-size: 13px; font-weight: 600; letter-spacing: .04em; transition: color .2s;
+  .socials-wa {
+    color: var(--ink); text-decoration: none;
+    font-size: 15px; font-weight: 700; letter-spacing: .02em;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+    transition: color .2s, border-color .2s;
   }
-  .socials a:hover { color: var(--ink); }
-  .socials .sep { width: 1px; height: 12px; background: var(--line); }
+  .socials-wa:hover { color: var(--ink-soft); border-color: var(--ink-soft); }
 
   .year {
     position: absolute; right: clamp(20px, 5vw, 64px); bottom: 30px;

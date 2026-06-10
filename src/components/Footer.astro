@@ -1,5 +1,54 @@
 ---
+import { SITE } from '@/config';
+const year = new Date().getFullYear();
 ---
-<footer>
-  <p>© {new Date().getFullYear()} A Tu Medida</p>
+
+<footer class="footer">
+  <div class="footer-inner">
+
+    <span class="footer-copy">© {year} {SITE.nombre}</span>
+    <span class="footer-credit">Página hecha por <a href="https://jhgo.online" target="_blank" rel="noopener">jhgo.online</a></span>
+
+  </div>
 </footer>
+
+<style>
+  .footer {
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    padding: 28px clamp(20px, 6vw, 80px);
+  }
+
+  .footer-inner {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .footer-copy {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .footer-credit {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .footer-credit a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color .2s;
+  }
+  .footer-credit a:hover { color: var(--ink); }
+
+  @media (max-width: 600px) {
+    .footer-inner { flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>

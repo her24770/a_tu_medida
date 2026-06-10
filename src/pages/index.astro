@@ -3,10 +3,14 @@ import Layout from '@/layouts/Layout.astro';
 import Hero from '@/components/home/Hero.astro';
 import HeroMobile from '@/components/home/HeroMobile.astro';
 import Coverflow from '@/components/Coverflow.astro';
+import Servicios from '@/components/home/Servicios.astro';
+import Sobre from '@/components/home/Sobre.astro';
 import Contacto from '@/components/home/Contacto.astro';
 import { getDestacados } from '@/lib/prendas';
+import { getServicios } from '@/lib/servicios';
 
 const destacados = getDestacados();
+const servicios  = getServicios();
 ---
 
 <Layout title="Inicio">
@@ -17,6 +21,8 @@ const destacados = getDestacados();
     <a href="/catalogo" class="coleccion-ver-mas">Ver más →</a>
   </div>
   <Coverflow prendas={destacados} autoplay dots />
+  <Servicios servicios={servicios} />
+  <Sobre />
   <Contacto />
 </Layout>
 
