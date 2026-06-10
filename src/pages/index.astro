@@ -2,7 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import Hero from '@/components/home/Hero.astro';
 import HeroMobile from '@/components/home/HeroMobile.astro';
-import Destacados from '@/components/home/Destacados.astro';
+import Coverflow from '@/components/Coverflow.astro';
 import Contacto from '@/components/home/Contacto.astro';
 import { getDestacados } from '@/lib/prendas';
 
@@ -12,6 +12,6 @@ const destacados = getDestacados();
 <Layout title="Inicio">
   <Hero />
   <HeroMobile />
-  <Destacados prendas={destacados} />
+  <Coverflow prendas={destacados} autoplay dots />
   <Contacto />
 </Layout>

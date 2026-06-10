@@ -1,0 +1,388 @@
+---
+import type { Prenda } from '@/types/prenda';
+
+interface Props {
+  prendas: Prenda[];
+  autoplay?: boolean;
+  dots?: boolean;
+}
+
+const { prendas, autoplay = true, dots = false } = Astro.props;
+
+const items = prendas.map(p => ({
+  id:   String(p.id),
+  src:  p.imagenes[0]?.url ?? '',
+  name: p.nombre,
+  cat:  p.categoria,
+}));
+---
+
+<div class="cf-wrapper">
+  <div class="cf-stage" id="cf-stage">
+    {items.map((item, i) => (
+      <div class="cf-item" data-index={String(i)}>
+        <img
+          src={item.src || '/placeholder.jpg'}
+          alt={item.name}
+          draggable="false"
+          loading="lazy"
+        />
+      </div>
+    ))}
+  </div>
+
+  <div class="cf-bottom">
+    <div class="cf-info">
+      <div class="cf-eyebrow" id="cf-cat">{items[0]?.cat ?? ''}</div>
+      <div class="cf-name" id="cf-name">{items[0]?.name ?? ''}</div>
+    </div>
+
+    <div class="cf-controls">
+      <button class="cf-arrow" id="cf-prev" aria-label="Anterior">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="cf-counter">
+        <span id="cf-cur">01</span>
+        <i></i>
+        <span class="cf-total">{String(items.length).padStart(2, '0')}</span>
+      </div>
+      <button class="cf-arrow" id="cf-next" aria-label="Siguiente">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    {dots && (
+      <div class="cf-dots" id="cf-dots">
+        {items.map((item, i) => (
+          <button
+            class={`cf-dot${i === 0 ? ' is-active' : ''}`}
+            data-index={String(i)}
+            aria-label={item.name}
+          />
+        ))}
+      </div>
+    )}
+  </div>
+</div>
+
+<style is:global>
+  .cf-wrapper {
+    position: relative;
+    width: 100%;
+    height: 72vh;
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .cf-stage {
+    position: relative;
+    flex: 1;
+    perspective: 1700px;
+    touch-action: pan-y;
+    cursor: grab;
+    user-select: none;
+  }
+  .cf-stage:active { cursor: grabbing; }
+
+  .cf-item {
+    position: absolute;
+    left: 50%;
+    bottom: 80px;
+    transform-style: preserve-3d;
+    will-change: transform, filter;
+  }
+
+  .cf-item img {
+    display: block;
+    height: min(50vh, 400px);
+    width: auto;
+    max-width: 28vw;
+    object-fit: contain;
+    object-position: bottom center;
+    -webkit-user-drag: none;
+    filter: drop-shadow(0 20px 32px rgba(0,0,0,0.13));
+  }
+
+  .cf-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 0 24px;
+    z-index: 10;
+  }
+
+  .cf-info { text-align: center; }
+
+  .cf-eyebrow {
+    font-family: var(--font);
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .cf-name {
+    font-family: var(--font);
+    font-size: clamp(24px, 3vw, 40px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .cf-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .cf-arrow {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, transform .15s;
+  }
+  .cf-arrow:hover  { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .cf-arrow:active { transform: scale(0.93); }
+
+  .cf-counter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font);
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+  }
+  .cf-counter i    { width: 24px; height: 1px; background: var(--ink); display: inline-block; }
+  .cf-total        { color: var(--ink-soft); }
+
+  .cf-dots { display: flex; gap: 8px; }
+  .cf-dot {
+    width: 7px; height: 7px; padding: 0;
+    border-radius: 50%;
+    border: none;
+    background: var(--line);
+    cursor: pointer;
+    transition: width .25s, background .25s;
+  }
+  .cf-dot.is-active { background: var(--ink); width: 20px; border-radius: 99px; }
+
+  @media (max-width: 600px) {
+    .cf-wrapper  { height: 65vh; min-height: 420px; }
+    .cf-item     { bottom: 60px; }
+    .cf-item img { max-width: 65vw; height: min(42vh, 300px); }
+  }
+</style>
+
+<script define:vars={{ cfItems: items, cfAutoplay: autoplay, cfDots: dots }}>
+  (function () {
+    const stage  = document.getElementById('cf-stage');
+    if (!stage || !cfItems.length) return;
+
+    const itemEls = Array.from(stage.querySelectorAll('.cf-item'));
+    const catEl   = document.getElementById('cf-cat');
+    const nameEl  = document.getElementById('cf-name');
+    const curEl   = document.getElementById('cf-cur');
+    const prevBtn = document.getElementById('cf-prev');
+    const nextBtn = document.getElementById('cf-next');
+    const dotsEl  = document.getElementById('cf-dots');
+    const dotBtns = dotsEl ? Array.from(dotsEl.querySelectorAll('.cf-dot')) : [];
+
+    const n = cfItems.length;
+
+    let pos         = 0;
+    let target      = 0;
+    let active      = 0;
+    let dragging    = null;
+    let wasDragged  = false;   // evita que un drag dispare click
+    let interacting = false;
+    let lastAuto    = performance.now();
+    let wheelAcc    = 0;
+    let wheelTimer  = 0;
+    let stageW      = stage.clientWidth;
+    let visN        = calcVisN();
+
+    const BLUR_UNIT = 1.6;
+    const MAX_BLUR  = 6;
+
+    function calcVisN() {
+      return window.innerWidth < 600 ? 1 : window.innerWidth < 1000 ? 2 : 3;
+    }
+
+    function wrap(d, n) {
+      d = ((d % n) + n) % n;
+      if (d > n / 2) d -= n;
+      return d;
+    }
+
+    function go(delta) {
+      target = Math.round(pos) + delta;
+      lastAuto = performance.now();
+    }
+
+    function focusItem(i) {
+      const base = Math.round(pos);
+      const cur  = ((base % n) + n) % n;
+      target     = base + wrap(i - cur, n);
+      lastAuto   = performance.now();
+    }
+
+    function updateInfo(a) {
+      const item = cfItems[a];
+      if (catEl)  catEl.textContent  = item.cat;
+      if (nameEl) nameEl.textContent = item.name;
+      if (curEl)  curEl.textContent  = String(a + 1).padStart(2, '0');
+      dotBtns.forEach((d, i) => d.classList.toggle('is-active', i === a));
+    }
+
+    function render() {
+      const gap = Math.min(stageW * 0.225, 330);
+      const p   = pos;
+
+      itemEls.forEach((el, i) => {
+        const o      = wrap(i - p, n);
+        const ao     = Math.abs(o);
+        const dir    = Math.sign(o);
+        const hidden = ao > visN + 0.55;
+
+        if (hidden) {
+          el.style.visibility = 'hidden';
+          return;
+        }
+
+        const x     = dir * gap * Math.pow(ao, 0.86);
+        const y     = -ao * 5;
+        const scale = 1 / (1 + ao * 0.5);
+        const blur  = Math.min(ao * BLUR_UNIT, MAX_BLUR);
+        const z     = 1000 - Math.round(ao * 100);
+
+        el.style.visibility    = 'visible';
+        el.style.opacity       = '1';
+        el.style.filter        = `blur(${blur}px)`;
+        el.style.zIndex        = String(z);
+        el.style.transform     = `translate(-50%, 0) translateX(${x}px) translateY(${y}px) scale(${scale})`;
+        el.style.pointerEvents = ao > 0.5 ? 'auto' : 'none';
+      });
+    }
+
+    // Bucle principal
+    setInterval(() => {
+      const now = performance.now();
+
+      if (cfAutoplay && !interacting && !dragging) {
+        if (now - lastAuto > 3600) {
+          target = Math.round(target) + 1;
+          lastAuto = now;
+        }
+      } else {
+        lastAuto = now;
+      }
+
+      const diff = target - pos;
+      pos += diff * 0.14;
+      if (Math.abs(diff) < 0.0004) pos = target;
+
+      const a = ((Math.round(pos) % n) + n) % n;
+      if (a !== active) { active = a; updateInfo(a); }
+
+      render();
+    }, 16);
+
+    // Resize
+    window.addEventListener('resize', () => {
+      stageW = stage.clientWidth;
+      visN   = calcVisN();
+    });
+
+    // Drag
+    stage.addEventListener('pointerdown', (e) => {
+      interacting = true;
+      wasDragged  = false;
+      dragging    = { x: e.clientX, startTarget: pos };
+      target      = pos;
+      stage.setPointerCapture(e.pointerId);
+    });
+
+    stage.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const gap = Math.min(stageW * 0.225, 330);
+      const dx  = e.clientX - dragging.x;
+      if (Math.abs(dx) > 5) wasDragged = true;
+      target = dragging.startTarget - dx / gap;
+      pos    = target;
+    });
+
+    const endDrag = () => {
+      if (!dragging) return;
+      target   = Math.round(target);
+      dragging = null;
+      lastAuto = performance.now();
+      setTimeout(() => {
+        interacting = false;
+        wasDragged  = false;
+      }, 400);
+    };
+    stage.addEventListener('pointerup',     endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+
+    // Click en items
+    itemEls.forEach((el, i) => {
+      el.addEventListener('click', () => {
+        if (wasDragged) return;
+        focusItem(i);
+      });
+    });
+
+    // Rueda del mouse
+    stage.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      interacting = true;
+      wheelAcc += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (Math.abs(wheelAcc) > 60) {
+        go(wheelAcc > 0 ? 1 : -1);
+        wheelAcc = 0;
+      }
+      clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(() => {
+        wheelAcc    = 0;
+        lastAuto    = performance.now();
+        interacting = false;
+      }, 700);
+    }, { passive: false });
+
+    stage.addEventListener('mouseenter', () => { interacting = true; });
+    stage.addEventListener('mouseleave', () => {
+      if (!dragging) { lastAuto = performance.now(); interacting = false; }
+    });
+
+    // Teclado
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') go(1);
+      if (e.key === 'ArrowLeft')  go(-1);
+    });
+
+    // Controles
+    prevBtn?.addEventListener('click', () => go(-1));
+    nextBtn?.addEventListener('click', () => go(1));
+    dotBtns.forEach((d, i) => d.addEventListener('click', () => focusItem(i)));
+
+    // Estado inicial
+    updateInfo(0);
+    render();
+  })();
+</script>
