@@ -6,32 +6,19 @@ const { slug } = Astro.params;
 const prenda = getPrendaBySlug(slug!);
 if (!prenda) return Astro.redirect('/catalogo');
 
-// Mock: 3 imágenes estáticas hasta tener galería real en BD
-const galeria = [
+const MOCK_IMGS = [
   'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=900&q=80',
   'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=900&q=80',
   'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=900&q=80',
 ];
+const imagenPrincipal = [...prenda.imagenes].sort((a, b) => a.orden - b.orden)[0]?.url ?? null;
+const galeria = imagenPrincipal
+  ? [imagenPrincipal, ...MOCK_IMGS.slice(1)]
+  : MOCK_IMGS;
 ---
 
 <Layout title={prenda.nombre}>
 <div class="dp">
-
-  <!-- ── Nav interna ──────────────────────────────────────── -->
-  <nav class="dp-nav">
-    <a href="/catalogo" class="dp-nav-btn">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 12H5M12 5l-7 7 7 7"/>
-      </svg>
-      Volver
-    </a>
-    <a href="/catalogo" class="dp-nav-btn">
-      Ver galería
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M5 12h14M12 5l7 7-7 7"/>
-      </svg>
-    </a>
-  </nav>
 
   <!-- ── Layout principal ─────────────────────────────────── -->
   <div class="dp-layout">
@@ -166,34 +153,12 @@ const galeria = [
   min-height: 100vh;
 }
 
-/* ── Nav interna (← Volver / Ver galería) ──────────────── */
-.dp-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px clamp(24px, 5vw, 64px);
-  border-bottom: 1px solid var(--line);
-}
-
-.dp-nav-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: .04em;
-  color: var(--ink-soft);
-  text-decoration: none;
-  transition: color .2s;
-}
-.dp-nav-btn:hover { color: var(--ink); }
-
 /* ── Layout 2 columnas ─────────────────────────────────── */
 .dp-layout {
   display: grid;
   grid-template-columns: 43% 57%;
   align-items: start;
-  min-height: calc(100vh - 64px - 57px); /* vh - dp - nav interna */
+  min-height: calc(100vh - 64px);
 }
 
 /* ── Columna izquierda ─────────────────────────────────── */

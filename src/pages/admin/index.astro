@@ -270,12 +270,18 @@ const categorias = getCategorias();
   padding: 7px 14px; border-radius: 999px;
   background: rgba(255,255,255,.92);
   border: 1px solid rgba(0,0,0,.1);
-  font-size: 12px; font-weight: 700; color: var(--ink);
+  font-size: 12px; font-weight: 700; color: #111;
   cursor: pointer; backdrop-filter: blur(4px);
   transition: background .2s, transform .2s;
   box-shadow: 0 2px 8px rgba(0,0,0,.12);
 }
 .adm-edit-btn:hover { background: #fff; transform: scale(1.04); }
+:global([data-theme="dark"]) .adm-edit-btn {
+  background: rgba(30,30,30,.92);
+  border-color: rgba(255,255,255,.15);
+  color: #f0f0f0;
+}
+:global([data-theme="dark"]) .adm-edit-btn:hover { background: rgba(45,45,45,.98); }
 
 /* Badge "Oculta" */
 .adm-badge-hidden {
