@@ -1,54 +1,556 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import GaleriaImagenes from '@/components/GaleriaImagenes.astro';
 import { getPrendaBySlug } from '@/lib/prendas';
 
 const { slug } = Astro.params;
 const prenda = getPrendaBySlug(slug!);
+if (!prenda) return Astro.redirect('/catalogo');
 
-if (!prenda) {
-  return Astro.redirect('/catalogo');
-}
+// Mock: 3 imágenes estáticas hasta tener galería real en BD
+const galeria = [
+  'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=900&q=80',
+  'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=900&q=80',
+  'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=900&q=80',
+];
 ---
 
 <Layout title={prenda.nombre}>
-  <article>
-    <GaleriaImagenes imagenes={prenda.imagenes} />
+<div class="dp">
 
-    <div>
-      <h1>{prenda.nombre}</h1>
-      <span>{prenda.tipo}</span>
-      <span>{prenda.categoria}</span>
-      <p>{prenda.descripcion}</p>
+  <!-- ── Nav interna ──────────────────────────────────────── -->
+  <nav class="dp-nav">
+    <a href="/catalogo" class="dp-nav-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+      Volver
+    </a>
+    <a href="/catalogo" class="dp-nav-btn">
+      Ver galería
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </nav>
 
+  <!-- ── Layout principal ─────────────────────────────────── -->
+  <div class="dp-layout">
+
+    <!-- Columna izquierda: detalles -->
+    <div class="dp-left">
+
+      <!-- Nombre + tipo (sólo desktop) -->
+      <div class="dp-d-title">
+        <h1 class="dp-nombre">{prenda.nombre}</h1>
+        <p class="dp-tipo">{prenda.tipo}</p>
+      </div>
+
+      <!-- Descripción -->
+      <p class="dp-desc">{prenda.descripcion}</p>
+
+      <!-- Colores -->
       {prenda.colores.length > 0 && (
-        <div>
-          <h2>Colores</h2>
-          <div>
-            {prenda.colores.map(color => (
-              <span style={`background-color: ${color.hex}`} title={color.nombre} />
+        <div class="dp-section">
+          <span class="dp-label">Colores</span>
+          <div class="dp-colores">
+            {prenda.colores.map(c => (
+              <div class="dp-color-item">
+                <span class="dp-swatch" style={`background:${c.hex}`}></span>
+                <span class="dp-color-name">{c.nombre}</span>
+              </div>
             ))}
           </div>
         </div>
       )}
 
+      <!-- Composición / telas -->
       {prenda.telas.length > 0 && (
-        <div>
-          <h2>Telas</h2>
-          <ul>{prenda.telas.map(tela => <li>{tela}</li>)}</ul>
+        <div class="dp-section">
+          <span class="dp-label">Composición</span>
+          <div class="dp-telas">
+            {prenda.telas.map(t => <span class="dp-tela">{t}</span>)}
+          </div>
         </div>
       )}
 
+      <!-- Detalles / características -->
       {prenda.caracteristicas.length > 0 && (
-        <div>
-          <h2>Características</h2>
-          <ul>{prenda.caracteristicas.map(c => <li>{c}</li>)}</ul>
+        <div class="dp-section">
+          <span class="dp-label">Detalles</span>
+          <ul class="dp-lista">
+            {prenda.caracteristicas.map(c => <li>{c}</li>)}
+          </ul>
         </div>
       )}
 
-      {prenda.tiempoEntrega && (
-        <p>Tiempo de entrega: {prenda.tiempoEntrega}</p>
-      )}
+      <!-- Galería strip -->
+      <div class="dp-section dp-section--last">
+        <span class="dp-label">Galería</span>
+        <div class="dp-strip-wrap">
+          <button class="dp-sbtn" id="dp-prev" disabled aria-label="Anterior">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+          <div class="dp-strip-clip">
+            <div class="dp-strip" id="dp-strip">
+              {galeria.map((url, i) => (
+                <button class={`dp-thumb${i === 0 ? ' dp-thumb--on' : ''}`} data-idx={String(i)} aria-label={`Imagen ${i + 1}`}>
+                  <img src={url} alt={`${prenda.nombre} — imagen ${i + 1}`} loading={i === 0 ? 'eager' : 'lazy'} />
+                </button>
+              ))}
+            </div>
+          </div>
+          <button class="dp-sbtn" id="dp-next" aria-label="Siguiente">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /dp-left -->
+
+    <!-- Columna derecha: imagen sticky -->
+    <div class="dp-right">
+      <div class="dp-grad"></div>
+      <img src={galeria[0]} alt={prenda.nombre} class="dp-hero-img" loading="eager" />
+      <!-- Overlay nombre+tipo sólo en móvil -->
+      <div class="dp-m-title" aria-hidden="true">
+        <p class="dp-nombre">{prenda.nombre}</p>
+        <p class="dp-tipo">{prenda.tipo}</p>
+      </div>
     </div>
-  </article>
+
+  </div><!-- /dp-layout -->
+</div><!-- /dp -->
+
+<!-- ── Modal galería ─────────────────────────────────────── -->
+<div class="dp-modal" id="dp-modal" hidden role="dialog" aria-modal="true" aria-label={`Galería de ${prenda.nombre}`}>
+  <button class="dp-modal-close" id="dp-modal-close" aria-label="Cerrar">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M6 6l12 12M18 6L6 18"/>
+    </svg>
+  </button>
+  <span class="dp-modal-counter" id="dp-modal-counter">1 / {galeria.length}</span>
+
+  <div class="dp-modal-body">
+    <button class="dp-modal-arrow" id="dp-modal-prev" aria-label="Anterior">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+    <img class="dp-modal-img" id="dp-modal-img" src={galeria[0]} alt={prenda.nombre} />
+    <button class="dp-modal-arrow" id="dp-modal-next" aria-label="Siguiente">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="dp-modal-foot" id="dp-modal-thumbs">
+    {galeria.map((url, i) => (
+      <button class={`dp-modal-thumb${i === 0 ? ' dp-modal-thumb--on' : ''}`} data-idx={String(i)} aria-label={`Ir a imagen ${i + 1}`}>
+        <img src={url} alt="" loading="lazy" />
+      </button>
+    ))}
+  </div>
+</div>
 </Layout>
+
+<style>
+/* ── Contenedor raíz ───────────────────────────────────── */
+.dp {
+  padding-top: 64px; /* compensa nav fijo */
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+/* ── Nav interna (← Volver / Ver galería) ──────────────── */
+.dp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px clamp(24px, 5vw, 64px);
+  border-bottom: 1px solid var(--line);
+}
+
+.dp-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color .2s;
+}
+.dp-nav-btn:hover { color: var(--ink); }
+
+/* ── Layout 2 columnas ─────────────────────────────────── */
+.dp-layout {
+  display: grid;
+  grid-template-columns: 43% 57%;
+  align-items: start;
+  min-height: calc(100vh - 64px - 57px); /* vh - dp - nav interna */
+}
+
+/* ── Columna izquierda ─────────────────────────────────── */
+.dp-left {
+  padding: clamp(40px, 5vh, 72px) clamp(24px, 4vw, 56px);
+  padding-right: clamp(28px, 3vw, 48px);
+}
+
+/* Nombre + tipo desktop */
+.dp-d-title { margin-bottom: 28px; }
+
+.dp-nombre {
+  font-size: clamp(44px, 6vw, 86px);
+  font-weight: 300;
+  letter-spacing: -.03em;
+  line-height: .92;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+.dp-tipo {
+  font-size: clamp(14px, 1.8vw, 20px);
+  font-weight: 400;
+  color: var(--ink-soft);
+  letter-spacing: .03em;
+  margin: 0;
+}
+
+/* Descripción */
+.dp-desc {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  max-width: 400px;
+  margin: 0 0 40px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Secciones */
+.dp-section {
+  margin-bottom: 32px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--line);
+}
+.dp-section--last { border-bottom: none; margin-bottom: 0; }
+
+.dp-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+}
+
+/* Colores */
+.dp-colores { display: flex; flex-wrap: wrap; gap: 12px; }
+.dp-color-item { display: flex; align-items: center; gap: 8px; }
+.dp-swatch {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,.2), inset 0 0 0 1px rgba(255,255,255,.3);
+}
+.dp-color-name { font-size: 14px; font-weight: 500; color: var(--ink); }
+
+/* Telas */
+.dp-telas { display: flex; flex-wrap: wrap; gap: 8px; }
+.dp-tela {
+  font-size: 13px; font-weight: 500; color: var(--ink);
+  background: var(--bg-secondary);
+  border-radius: 999px;
+  padding: 5px 14px;
+}
+
+/* Características */
+.dp-lista { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.dp-lista li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 14px; color: var(--ink-soft); line-height: 1.55;
+}
+.dp-lista li::before {
+  content: '';
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0; margin-top: 6px;
+}
+
+/* ── Galería strip ─────────────────────────────────────── */
+.dp-strip-wrap {
+  display: flex; align-items: center; gap: 10px;
+}
+.dp-strip-clip { flex: 1; overflow: hidden; }
+.dp-strip {
+  display: flex; gap: 10px;
+  transition: transform .38s cubic-bezier(.22,.61,.36,1);
+}
+
+.dp-thumb {
+  flex: 0 0 auto;
+  width: 88px; height: 114px;
+  border-radius: 10px; overflow: hidden;
+  border: 2px solid transparent;
+  padding: 0; cursor: pointer;
+  background: var(--bg-secondary);
+  transition: border-color .2s, opacity .2s;
+}
+.dp-thumb:hover { opacity: .8; }
+.dp-thumb--on { border-color: var(--accent); }
+.dp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.dp-sbtn {
+  flex-shrink: 0;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  display: grid; place-items: center;
+  cursor: pointer; color: var(--ink);
+  transition: background .2s;
+}
+.dp-sbtn:hover { background: var(--bg-secondary); }
+.dp-sbtn:disabled { opacity: .3; cursor: default; }
+
+/* ── Columna derecha: imagen sticky ────────────────────── */
+.dp-right {
+  position: sticky;
+  top: 64px; /* abajo de la nav fija */
+  height: calc(100vh - 64px);
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+/* Gradiente de fusión izq→centro */
+.dp-grad {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(
+    to right,
+    var(--bg)  0%,
+    var(--bg)  12%,
+    transparent 54%
+  );
+}
+
+.dp-hero-img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  object-position: bottom right;
+  display: block;
+}
+
+/* Overlay nombre+tipo — sólo móvil */
+.dp-m-title { display: none; }
+
+/* ── Modal ─────────────────────────────────────────────── */
+.dp-modal {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(16,15,14,.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.dp-modal[hidden] { display: none; }
+
+@keyframes dp-pop {
+  from { opacity: 0; transform: scale(.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.dp-modal-close {
+  position: absolute; top: 20px; right: 20px;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  border: none; cursor: pointer; color: #fff;
+  display: grid; place-items: center;
+  transition: background .2s;
+}
+.dp-modal-close:hover { background: rgba(255,255,255,.22); }
+
+.dp-modal-counter {
+  position: absolute; top: 26px; left: 24px;
+  font-size: 13px; font-weight: 500;
+  color: rgba(255,255,255,.6); letter-spacing: .08em;
+}
+
+.dp-modal-body {
+  display: flex; align-items: center; gap: 16px;
+  width: 100%; padding: 0 16px; flex: 1; min-height: 0;
+}
+
+.dp-modal-arrow {
+  flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  border: none; cursor: pointer; color: #fff;
+  display: grid; place-items: center;
+  transition: background .2s;
+}
+.dp-modal-arrow:hover { background: rgba(255,255,255,.22); }
+
+.dp-modal-img {
+  max-width: min(560px, 80vw);
+  max-height: 64vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.5);
+  animation: dp-pop .28s ease;
+  display: block; margin: 0 auto;
+}
+
+.dp-modal-foot {
+  display: flex; gap: 10px; justify-content: center;
+  margin: 20px 0 28px;
+  max-width: 92vw; overflow-x: auto; padding: 0 12px;
+}
+
+.dp-modal-thumb {
+  flex: 0 0 auto;
+  width: 52px; height: 68px; border-radius: 6px;
+  overflow: hidden; cursor: pointer;
+  background: rgba(255,255,255,.1);
+  border: 2px solid transparent; padding: 0;
+  opacity: .45;
+  transition: opacity .2s, border-color .2s;
+}
+.dp-modal-thumb:hover { opacity: .75; }
+.dp-modal-thumb--on { opacity: 1; border-color: rgba(255,255,255,.75); }
+.dp-modal-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ── Responsive: móvil ─────────────────────────────────── */
+@media (max-width: 880px) {
+  .dp-layout {
+    grid-template-columns: 1fr;
+  }
+
+  /* Imagen arriba */
+  .dp-right {
+    position: relative;
+    top: 0; height: 56svh;
+    order: -1;
+  }
+
+  /* Gradiente en móvil: de abajo hacia arriba */
+  .dp-grad {
+    background: linear-gradient(
+      to top,
+      var(--bg)     0%,
+      var(--bg)     8%,
+      transparent   50%
+    );
+  }
+
+  /* Overlay nombre+tipo sobre imagen */
+  .dp-m-title {
+    display: block;
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
+    padding: 40px 24px 22px;
+    background: linear-gradient(transparent, rgba(0,0,0,.52) 65%);
+  }
+  .dp-m-title .dp-nombre {
+    font-size: clamp(36px, 11vw, 58px);
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .dp-m-title .dp-tipo {
+    color: rgba(255,255,255,.78);
+    font-size: 15px;
+    margin: 0;
+  }
+
+  /* Ocultar nombre+tipo del panel izquierdo en móvil */
+  .dp-d-title { display: none; }
+
+  .dp-left {
+    padding: 28px clamp(20px, 5vw, 40px);
+  }
+  .dp-desc { margin-bottom: 28px; padding-bottom: 24px; max-width: none; }
+  .dp-section { margin-bottom: 24px; padding-bottom: 24px; }
+  .dp-thumb { width: 76px; height: 98px; }
+}
+
+@media (max-width: 420px) {
+  .dp-right { height: 50svh; }
+  .dp-thumb { width: 68px; height: 88px; }
+}
+</style>
+
+<script>
+  // ── Gallery strip ───────────────────────────────────────
+  const strip     = document.getElementById('dp-strip')!;
+  const prevBtn   = document.getElementById('dp-prev') as HTMLButtonElement;
+  const nextBtn   = document.getElementById('dp-next') as HTMLButtonElement;
+  const thumbs    = [...strip.querySelectorAll<HTMLButtonElement>('.dp-thumb')];
+  const THUMB_W   = () => (thumbs[0]?.offsetWidth ?? 88) + 10; // width + gap
+  const VISIBLE   = 3;
+  const TOTAL     = thumbs.length;
+  let   stripIdx  = 0;
+
+  function updateStrip() {
+    strip.style.transform = `translateX(-${stripIdx * THUMB_W()}px)`;
+    prevBtn.disabled = stripIdx === 0;
+    nextBtn.disabled = stripIdx >= TOTAL - VISIBLE;
+  }
+
+  prevBtn.addEventListener('click', () => { stripIdx = Math.max(0, stripIdx - 1); updateStrip(); });
+  nextBtn.addEventListener('click', () => { stripIdx = Math.min(TOTAL - VISIBLE, stripIdx + 1); updateStrip(); });
+  updateStrip();
+
+  // ── Modal ────────────────────────────────────────────────
+  const modal       = document.getElementById('dp-modal')!;
+  const modalImg    = document.getElementById('dp-modal-img') as HTMLImageElement;
+  const modalCtr    = document.getElementById('dp-modal-counter')!;
+  const modalThumbs = [...document.querySelectorAll<HTMLButtonElement>('.dp-modal-thumb')];
+  const URLS        = thumbs.map(t => t.querySelector('img')!.src);
+  let   modalIdx    = 0;
+
+  function openModal(idx: number) {
+    modalIdx = idx;
+    syncModal();
+    modal.removeAttribute('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.setAttribute('hidden', '');
+    document.body.style.overflow = '';
+  }
+
+  function syncModal() {
+    // replay animation
+    modalImg.style.animation = 'none';
+    void modalImg.offsetWidth;
+    modalImg.style.animation = '';
+    modalImg.src = URLS[modalIdx];
+    modalCtr.textContent = `${modalIdx + 1} / ${URLS.length}`;
+    modalThumbs.forEach((t, i) => t.classList.toggle('dp-modal-thumb--on', i === modalIdx));
+  }
+
+  function prevModal() { modalIdx = (modalIdx - 1 + URLS.length) % URLS.length; syncModal(); }
+  function nextModal() { modalIdx = (modalIdx + 1) % URLS.length; syncModal(); }
+
+  // Abrir desde strip
+  thumbs.forEach((t, i) => t.addEventListener('click', () => openModal(i)));
+
+  // Controles modal
+  document.getElementById('dp-modal-close')!.addEventListener('click', closeModal);
+  document.getElementById('dp-modal-prev')!.addEventListener('click', prevModal);
+  document.getElementById('dp-modal-next')!.addEventListener('click', nextModal);
+  modalThumbs.forEach((t, i) => t.addEventListener('click', () => { modalIdx = i; syncModal(); }));
+
+  // Click en fondo oscuro cierra
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+  // Teclado
+  document.addEventListener('keydown', e => {
+    if (modal.hasAttribute('hidden')) return;
+    if (e.key === 'Escape')     closeModal();
+    if (e.key === 'ArrowLeft')  prevModal();
+    if (e.key === 'ArrowRight') nextModal();
+  });
+</script>

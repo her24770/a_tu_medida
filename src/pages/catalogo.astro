@@ -1,24 +1,195 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import CardPrenda from '@/components/CardPrenda.astro';
-import FiltroCategoria from '@/components/FiltroCategoria.astro';
 import { getPrendas } from '@/lib/prendas';
 import { getCategorias } from '@/lib/categorias';
 
-const tipo       = Astro.url.searchParams.get('tipo')      ?? undefined;
-const categoria  = Astro.url.searchParams.get('categoria') ?? undefined;
-
-const prendas    = getPrendas(tipo, categoria);
+const prendas    = getPrendas();       // todas las disponibles
 const categorias = getCategorias();
 ---
 
-<Layout title="Catálogo">
-  <h1>Catálogo</h1>
-  <FiltroCategoria {categorias} categoriaActual={categoria} tipoActual={tipo} />
-  <div>
-    {prendas.length === 0
-      ? <p>No hay prendas disponibles.</p>
-      : prendas.map(prenda => <CardPrenda prenda={prenda} />)
-    }
+<Layout title="Galería">
+<div class="cat">
+
+  <!-- ── Cabecera ──────────────────────────────────────── -->
+  <div class="cat-header">
+    <div>
+      <h1 class="cat-title">Galería</h1>
+      <p class="cat-sub" id="cat-count">
+        {prendas.length} {prendas.length === 1 ? 'prenda' : 'prendas'}
+      </p>
+    </div>
   </div>
+
+  <!-- ── Filtros de categoría ──────────────────────────── -->
+  {categorias.length > 0 && (
+    <div class="cat-filters-wrap">
+      <div class="cat-filters" role="group" aria-label="Filtrar por categoría">
+        <button class="cat-pill cat-pill--on" data-filter="all">Todas</button>
+        {categorias.map(c => (
+          <button class="cat-pill" data-filter={c.slug}>{c.nombre}</button>
+        ))}
+      </div>
+    </div>
+  )}
+
+  <!-- ── Grid ──────────────────────────────────────────── -->
+  {prendas.length === 0 ? (
+    <p class="cat-empty">No hay prendas disponibles.</p>
+  ) : (
+    <div class="cat-grid" id="cat-grid">
+      {prendas.map(p => (
+        <div class="cat-item" data-categoria={p.categoria}>
+          <CardPrenda prenda={p} />
+        </div>
+      ))}
+    </div>
+  )}
+
+</div>
 </Layout>
+
+<style>
+/* ── Página ────────────────────────────────────────────── */
+.cat {
+  padding-top: 64px; /* nav fija */
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ── Cabecera ──────────────────────────────────────────── */
+.cat-header {
+  padding: 48px clamp(20px, 6vw, 80px) 0;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+.cat-title {
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -.03em;
+  line-height: 1;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+
+.cat-sub {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0;
+  letter-spacing: .02em;
+}
+
+/* ── Filtros ───────────────────────────────────────────── */
+.cat-filters-wrap {
+  max-width: var(--maxw);
+  margin: 32px auto 0;
+  padding: 0 clamp(20px, 6vw, 80px);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* Ocultar scrollbar */
+.cat-filters-wrap::-webkit-scrollbar { display: none; }
+.cat-filters-wrap { scrollbar-width: none; }
+
+.cat-filters {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 2px; /* evita corte de sombra */
+  width: max-content;
+}
+
+.cat-pill {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--bg);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+  white-space: nowrap;
+}
+.cat-pill:hover { color: var(--ink); border-color: var(--ink); }
+.cat-pill--on {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+:global([data-theme="dark"]) .cat-pill--on {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* ── Grid ──────────────────────────────────────────────── */
+.cat-grid {
+  max-width: var(--maxw);
+  margin: 36px auto 80px;
+  padding: 0 clamp(20px, 6vw, 80px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* Item wrapper — oculto al filtrar */
+.cat-item { display: contents; }
+.cat-item.hidden { display: none; }
+
+/* Sin resultados */
+.cat-empty {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 15px;
+  padding: 80px 20px;
+}
+
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+}
+
+@media (max-width: 540px) {
+  .cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 clamp(12px, 4vw, 20px);
+    margin-bottom: 60px;
+  }
+  .cat-header { padding-top: 32px; }
+  .cat-filters-wrap { padding: 0 clamp(12px, 4vw, 20px); }
+}
+
+@media (max-width: 360px) {
+  .cat-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<script>
+  const pills   = document.querySelectorAll<HTMLButtonElement>('.cat-pill');
+  const items   = document.querySelectorAll<HTMLElement>('.cat-item');
+  const counter = document.getElementById('cat-count');
+
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      const f = pill.dataset.filter ?? 'all';
+
+      // Pill activa
+      pills.forEach(p => p.classList.remove('cat-pill--on'));
+      pill.classList.add('cat-pill--on');
+
+      // Mostrar / ocultar cards
+      let visible = 0;
+      items.forEach(item => {
+        const match = f === 'all' || item.dataset.categoria === f;
+        item.classList.toggle('hidden', !match);
+        if (match) visible++;
+      });
+
+      if (counter) {
+        counter.textContent = `${visible} ${visible === 1 ? 'prenda' : 'prendas'}`;
+      }
+    });
+  });
+</script>

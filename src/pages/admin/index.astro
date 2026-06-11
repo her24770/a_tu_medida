@@ -1,8 +1,659 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import PrendaModal from '@/components/admin/PrendaModal.astro';
+import CardPrenda from '@/components/CardPrenda.astro';
+import { getAllPrendas } from '@/lib/prendas';
+import { getCategorias } from '@/lib/categorias';
+
+// Auth
+const secret = import.meta.env.ADMIN_SECRET ?? 'changeme';
+if (Astro.cookies.get('atm_admin')?.value !== secret) {
+  return Astro.redirect('/admin/login');
+}
+
+const prendas    = getAllPrendas();
+const categorias = getCategorias();
 ---
-<Layout title="Admin — Panel">
-  <h1>Panel de administración</h1>
-  <PrendaModal />
+
+<Layout title="Admin — Galería">
+<div class="adm">
+
+  <!-- ── Barra admin ──────────────────────────────────────── -->
+  <div class="adm-bar">
+    <span class="adm-bar-label">Panel de administración</span>
+    <div class="adm-bar-actions">
+      <a href="/" class="adm-bar-link">Ver sitio →</a>
+      <form action="/api/admin/logout" method="POST" style="display:inline">
+        <button type="submit" class="adm-bar-logout">Cerrar sesión</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Cabecera ──────────────────────────────────────────── -->
+  <div class="adm-header">
+    <h1 class="adm-title">Galería</h1>
+    <p class="adm-sub" id="adm-count">{prendas.length} prendas</p>
+  </div>
+
+  <!-- ── Filtros ───────────────────────────────────────────── -->
+  {categorias.length > 0 && (
+    <div class="adm-filters-wrap">
+      <div class="adm-filters">
+        <button class="adm-pill adm-pill--on" data-filter="all">Todas</button>
+        {categorias.map(c => (
+          <button class="adm-pill" data-filter={c.slug}>{c.nombre}</button>
+        ))}
+      </div>
+    </div>
+  )}
+
+  <!-- ── Grid ──────────────────────────────────────────────── -->
+  {prendas.length === 0 ? (
+    <p class="adm-empty">No hay prendas. Agregá una desde la base de datos.</p>
+  ) : (
+    <div class="adm-grid" id="adm-grid">
+      {prendas.map(p => (
+        <div class="adm-item" data-categoria={p.categoria} data-id={p.id}>
+          <div class="adm-card-wrap">
+            <CardPrenda prenda={p} />
+            {!p.disponible && <span class="adm-badge-hidden">Oculta</span>}
+            <button
+              class="adm-edit-btn"
+              data-id={p.id}
+              aria-label={`Editar ${p.nombre}`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Editar
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+
+</div>
+
+<!-- ── Modal edición ──────────────────────────────────────── -->
+<div class="em" id="em" hidden role="dialog" aria-modal="true" aria-label="Editar prenda">
+  <div class="em-overlay" id="em-overlay"></div>
+  <div class="em-box">
+
+    <div class="em-head">
+      <h2 class="em-title">Editar prenda</h2>
+      <button class="em-close" id="em-close" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="em-body">
+      <input type="hidden" id="em-id" />
+
+      <!-- Fila 1: nombre + tipo -->
+      <div class="em-row em-row-2">
+        <div class="em-field">
+          <label class="em-label" for="em-nombre">Nombre</label>
+          <input class="em-input" id="em-nombre" type="text" />
+        </div>
+        <div class="em-field">
+          <label class="em-label" for="em-tipo">Tipo</label>
+          <input class="em-input" id="em-tipo" type="text" />
+        </div>
+      </div>
+
+      <!-- Fila 2: slug + categoría -->
+      <div class="em-row em-row-2">
+        <div class="em-field">
+          <label class="em-label" for="em-slug">
+            Slug
+            <span class="em-hint">(cambiarlo rompe URLs existentes)</span>
+          </label>
+          <input class="em-input" id="em-slug" type="text" />
+        </div>
+        <div class="em-field">
+          <label class="em-label" for="em-cat">Categoría</label>
+          <select class="em-input em-select" id="em-cat">
+            {categorias.map(c => (
+              <option value={c.slug}>{c.nombre}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="em-field">
+        <label class="em-label" for="em-desc">Descripción</label>
+        <textarea class="em-input em-textarea" id="em-desc" rows={4}></textarea>
+      </div>
+
+      <!-- Tiempo de entrega -->
+      <div class="em-field">
+        <label class="em-label" for="em-entrega">Tiempo de entrega</label>
+        <input class="em-input" id="em-entrega" type="text" placeholder="Ej: 15 a 20 días hábiles" />
+      </div>
+
+      <!-- Telas -->
+      <div class="em-field">
+        <label class="em-label">Telas / Composición</label>
+        <div class="em-list" id="em-telas"></div>
+        <button type="button" class="em-add-btn" id="em-telas-add">+ Agregar tela</button>
+      </div>
+
+      <!-- Características -->
+      <div class="em-field">
+        <label class="em-label">Características / Detalles</label>
+        <div class="em-list" id="em-caract"></div>
+        <button type="button" class="em-add-btn" id="em-caract-add">+ Agregar característica</button>
+      </div>
+
+      <!-- Colores -->
+      <div class="em-field">
+        <label class="em-label">Colores</label>
+        <div class="em-list" id="em-colores"></div>
+        <button type="button" class="em-add-btn" id="em-colores-add">+ Agregar color</button>
+      </div>
+
+      <!-- Checkboxes -->
+      <div class="em-checks">
+        <label class="em-check-label">
+          <input type="checkbox" id="em-disponible" class="em-check" />
+          Disponible (visible en el sitio)
+        </label>
+        <label class="em-check-label">
+          <input type="checkbox" id="em-destacado" class="em-check" />
+          Destacada (aparece en el inicio)
+        </label>
+      </div>
+
+      <!-- Feedback -->
+      <p class="em-feedback em-feedback--ok"  id="em-ok"  hidden>✓ Guardado correctamente.</p>
+      <p class="em-feedback em-feedback--err" id="em-err" hidden>Error al guardar. Intentá de nuevo.</p>
+    </div>
+
+    <div class="em-foot">
+      <button class="em-btn-delete" id="em-delete">Eliminar prenda</button>
+      <div class="em-foot-right">
+        <button class="em-btn-cancel" id="em-cancel">Cancelar</button>
+        <button class="em-btn-save" id="em-save">Guardar cambios</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 </Layout>
+
+<style>
+/* ── Página admin ───────────────────────────────────────── */
+.adm {
+  padding-top: 64px;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ── Barra superior ─────────────────────────────────────── */
+.adm-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px clamp(20px, 6vw, 80px);
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.adm-bar-label { font-weight: 600; opacity: .7; }
+.adm-bar-actions { display: flex; align-items: center; gap: 20px; }
+.adm-bar-link {
+  color: var(--bg); text-decoration: none; font-weight: 600; opacity: .8;
+  transition: opacity .2s;
+}
+.adm-bar-link:hover { opacity: 1; }
+.adm-bar-logout {
+  background: none; border: 1px solid rgba(255,255,255,.3);
+  color: var(--bg); font-size: 13px; font-weight: 600;
+  padding: 5px 14px; border-radius: 999px; cursor: pointer;
+  transition: background .2s;
+}
+.adm-bar-logout:hover { background: rgba(255,255,255,.1); }
+
+/* ── Cabecera ───────────────────────────────────────────── */
+.adm-header {
+  padding: 40px clamp(20px, 6vw, 80px) 0;
+  max-width: var(--maxw); margin: 0 auto;
+}
+.adm-title {
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 700; letter-spacing: -.03em;
+  color: var(--ink); margin: 0 0 6px;
+}
+.adm-sub { font-size: 14px; color: var(--ink-soft); margin: 0; }
+
+/* ── Filtros ────────────────────────────────────────────── */
+.adm-filters-wrap {
+  max-width: var(--maxw); margin: 28px auto 0;
+  padding: 0 clamp(20px, 6vw, 80px);
+  overflow-x: auto; scrollbar-width: none;
+}
+.adm-filters-wrap::-webkit-scrollbar { display: none; }
+.adm-filters { display: flex; gap: 10px; width: max-content; padding-bottom: 2px; }
+.adm-pill {
+  flex-shrink: 0; padding: 7px 16px; border-radius: 999px;
+  border: 1.5px solid var(--line); background: var(--bg);
+  font-size: 13px; font-weight: 600; color: var(--ink-soft);
+  cursor: pointer; white-space: nowrap;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.adm-pill:hover { color: var(--ink); border-color: var(--ink); }
+.adm-pill--on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* ── Grid ───────────────────────────────────────────────── */
+.adm-grid {
+  max-width: var(--maxw); margin: 32px auto 80px;
+  padding: 0 clamp(20px, 6vw, 80px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.adm-item { display: contents; }
+.adm-item.hidden { display: none; }
+
+.adm-card-wrap { position: relative; }
+
+/* Botón editar superpuesto en la card */
+.adm-edit-btn {
+  position: absolute; top: 12px; right: 12px; z-index: 10;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 999px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.1);
+  font-size: 12px; font-weight: 700; color: var(--ink);
+  cursor: pointer; backdrop-filter: blur(4px);
+  transition: background .2s, transform .2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+.adm-edit-btn:hover { background: #fff; transform: scale(1.04); }
+
+/* Badge "Oculta" */
+.adm-badge-hidden {
+  position: absolute; bottom: 72px; left: 12px; z-index: 10;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(192,57,43,.88); color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+}
+
+.adm-empty {
+  text-align: center; color: var(--ink-soft);
+  font-size: 15px; padding: 80px 20px;
+}
+
+/* ── Modal ──────────────────────────────────────────────── */
+.em { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.em[hidden] { display: none; }
+
+.em-overlay {
+  position: absolute; inset: 0;
+  background: rgba(10,10,10,.55);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.em-box {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 620px; max-height: 90vh;
+  background: var(--bg);
+  border-radius: 20px;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,.25);
+  overflow: hidden;
+}
+
+.em-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.em-title { font-size: 18px; font-weight: 700; color: var(--ink); margin: 0; }
+.em-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg-secondary); border: none;
+  display: grid; place-items: center; cursor: pointer; color: var(--ink);
+  transition: background .2s;
+}
+.em-close:hover { background: var(--line); }
+
+.em-body {
+  flex: 1; overflow-y: auto; padding: 24px 28px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+.em-row { display: flex; gap: 16px; }
+.em-row-2 > * { flex: 1; min-width: 0; }
+
+.em-field { display: flex; flex-direction: column; gap: 6px; }
+
+.em-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-soft);
+  display: flex; align-items: center; gap: 8px;
+}
+.em-hint {
+  font-size: 10px; font-weight: 400; letter-spacing: 0;
+  text-transform: none; color: var(--ink-soft); opacity: .7;
+}
+
+.em-input {
+  padding: 10px 14px; border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--bg-secondary);
+  color: var(--ink); font-size: 14px;
+  font-family: var(--font); outline: none;
+  transition: border-color .2s;
+  width: 100%;
+}
+.em-input:focus { border-color: var(--accent); }
+.em-select { cursor: pointer; }
+.em-textarea { resize: vertical; min-height: 90px; }
+
+/* Listas dinámicas (telas, características, colores) */
+.em-list { display: flex; flex-direction: column; gap: 8px; }
+
+.em-list-item {
+  display: flex; align-items: center; gap: 8px;
+}
+.em-list-item input[type="text"] {
+  flex: 1;
+  padding: 8px 12px; border-radius: 8px;
+  border: 1.5px solid var(--line);
+  background: var(--bg-secondary);
+  color: var(--ink); font-size: 14px; font-family: var(--font);
+  outline: none; transition: border-color .2s;
+}
+.em-list-item input[type="text"]:focus { border-color: var(--accent); }
+.em-list-item input[type="color"] {
+  width: 36px; height: 36px; border-radius: 8px;
+  border: 1.5px solid var(--line); cursor: pointer;
+  padding: 2px; background: var(--bg-secondary); flex-shrink: 0;
+}
+.em-remove-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: none; border: 1px solid var(--line);
+  color: var(--ink-soft); font-size: 14px; cursor: pointer;
+  display: grid; place-items: center; flex-shrink: 0;
+  transition: background .2s, color .2s;
+}
+.em-remove-btn:hover { background: #ffe0e0; color: #c0392b; border-color: #c0392b; }
+
+.em-add-btn {
+  align-self: flex-start;
+  padding: 6px 14px; border-radius: 999px;
+  border: 1.5px dashed var(--line);
+  background: none; color: var(--ink-soft);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: border-color .2s, color .2s;
+  margin-top: 4px;
+}
+.em-add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Checkboxes */
+.em-checks { display: flex; flex-direction: column; gap: 12px; }
+.em-check-label {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 500; color: var(--ink);
+  cursor: pointer;
+}
+.em-check {
+  width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;
+}
+
+/* Feedback */
+.em-feedback {
+  padding: 10px 14px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; margin: 0;
+}
+.em-feedback[hidden] { display: none; }
+.em-feedback--ok  { background: rgba(39,174,96,.1); color: #1e8449; }
+.em-feedback--err { background: rgba(192,57,43,.1); color: #c0392b; }
+
+/* Footer del modal */
+.em-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 28px;
+  border-top: 1px solid var(--line);
+  flex-shrink: 0; gap: 12px;
+}
+.em-foot-right { display: flex; gap: 10px; }
+
+.em-btn-delete {
+  padding: 10px 18px; border-radius: 10px;
+  border: 1.5px solid rgba(192,57,43,.4);
+  background: rgba(192,57,43,.06); color: #c0392b;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background .2s;
+}
+.em-btn-delete:hover { background: rgba(192,57,43,.12); }
+
+.em-btn-cancel {
+  padding: 10px 20px; border-radius: 10px;
+  border: 1.5px solid var(--line); background: none;
+  color: var(--ink-soft); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background .2s;
+}
+.em-btn-cancel:hover { background: var(--bg-secondary); }
+
+.em-btn-save {
+  padding: 10px 24px; border-radius: 10px;
+  border: none; background: var(--ink); color: var(--bg);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: opacity .2s;
+}
+.em-btn-save:hover { opacity: .85; }
+.em-btn-save:disabled { opacity: .5; cursor: default; }
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .adm-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+}
+@media (max-width: 560px) {
+  .adm-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 clamp(12px,4vw,20px); }
+  .adm-header { padding: 28px clamp(12px,4vw,20px) 0; }
+  .adm-filters-wrap { padding: 0 clamp(12px,4vw,20px); }
+  .em-box { max-height: 95vh; border-radius: 16px; }
+  .em-body { padding: 18px 20px; }
+  .em-head, .em-foot { padding: 16px 20px; }
+  .em-row-2 { flex-direction: column; gap: 20px; }
+}
+</style>
+
+<script>
+  // ── Filtros ────────────────────────────────────────────
+  const pills   = document.querySelectorAll('.adm-pill');
+  const items   = document.querySelectorAll('.adm-item');
+  const counter = document.getElementById('adm-count');
+
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      const f = pill.dataset.filter ?? 'all';
+      pills.forEach(p => p.classList.remove('adm-pill--on'));
+      pill.classList.add('adm-pill--on');
+      let v = 0;
+      items.forEach(item => {
+        const show = f === 'all' || item.dataset.categoria === f;
+        item.classList.toggle('hidden', !show);
+        if (show) v++;
+      });
+      if (counter) counter.textContent = `${v} prendas`;
+    });
+  });
+
+  // ── Modal helpers ──────────────────────────────────────
+  const modal    = document.getElementById('em')!;
+  const overlay  = document.getElementById('em-overlay')!;
+  const btnClose = document.getElementById('em-close')!;
+  const btnSave  = document.getElementById('em-save') as HTMLButtonElement;
+  const btnCancel= document.getElementById('em-cancel')!;
+  const btnDel   = document.getElementById('em-delete')!;
+  const okMsg    = document.getElementById('em-ok')!;
+  const errMsg   = document.getElementById('em-err')!;
+
+  function openModal() {
+    modal.removeAttribute('hidden');
+    document.body.style.overflow = 'hidden';
+    okMsg.hidden = errMsg.hidden = true;
+  }
+  function closeModal() {
+    modal.setAttribute('hidden', '');
+    document.body.style.overflow = '';
+  }
+  [overlay, btnClose, btnCancel].forEach(el => el.addEventListener('click', closeModal));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hasAttribute('hidden')) closeModal(); });
+
+  // ── Lista dinámica genérica (telas, características) ──
+  function buildStringList(containerId: string, values: string[]) {
+    const c = document.getElementById(containerId)!;
+    c.innerHTML = '';
+    values.forEach(v => addStringItem(c, v));
+  }
+  function addStringItem(container: HTMLElement, value = '') {
+    const div = document.createElement('div');
+    div.className = 'em-list-item';
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.value = value;
+    const rm = document.createElement('button');
+    rm.type = 'button'; rm.className = 'em-remove-btn'; rm.textContent = '×';
+    rm.onclick = () => div.remove();
+    div.append(inp, rm);
+    container.appendChild(div);
+    inp.focus();
+  }
+  function getStringList(containerId: string): string[] {
+    return [...document.querySelectorAll<HTMLInputElement>(`#${containerId} input[type="text"]`)]
+      .map(i => i.value.trim()).filter(Boolean);
+  }
+
+  // ── Lista dinámica de colores ──────────────────────────
+  function buildColorList(values: { nombre: string; hex: string }[]) {
+    const c = document.getElementById('em-colores')!;
+    c.innerHTML = '';
+    values.forEach(v => addColorItem(c, v.nombre, v.hex));
+  }
+  function addColorItem(container: HTMLElement, nombre = '', hex = '#b8956a') {
+    const div = document.createElement('div');
+    div.className = 'em-list-item';
+    const picker = document.createElement('input');
+    picker.type = 'color'; picker.value = hex;
+    const nameInp = document.createElement('input');
+    nameInp.type = 'text'; nameInp.placeholder = 'Nombre del color'; nameInp.value = nombre;
+    const rm = document.createElement('button');
+    rm.type = 'button'; rm.className = 'em-remove-btn'; rm.textContent = '×';
+    rm.onclick = () => div.remove();
+    div.append(picker, nameInp, rm);
+    container.appendChild(div);
+  }
+  function getColorList(): { nombre: string; hex: string }[] {
+    return [...document.querySelectorAll<HTMLElement>('#em-colores .em-list-item')].map(row => ({
+      hex:    (row.querySelector('input[type="color"]') as HTMLInputElement).value,
+      nombre: (row.querySelector('input[type="text"]')  as HTMLInputElement).value.trim(),
+    })).filter(c => c.nombre);
+  }
+
+  // ── Abrir modal con datos de la prenda ────────────────
+  document.querySelectorAll<HTMLButtonElement>('.adm-edit-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id!;
+      okMsg.hidden = errMsg.hidden = true;
+
+      // Cargar datos frescos de la API
+      const res = await fetch(`/api/prendas/${id}`);
+      if (!res.ok) { alert('Error al cargar la prenda.'); return; }
+      const p = await res.json();
+
+      (document.getElementById('em-id')         as HTMLInputElement).value  = p.id;
+      (document.getElementById('em-nombre')     as HTMLInputElement).value  = p.nombre;
+      (document.getElementById('em-slug')       as HTMLInputElement).value  = p.slug;
+      (document.getElementById('em-tipo')       as HTMLInputElement).value  = p.tipo;
+      (document.getElementById('em-desc')       as HTMLTextAreaElement).value = p.descripcion;
+      (document.getElementById('em-entrega')    as HTMLInputElement).value  = p.tiempoEntrega ?? '';
+      (document.getElementById('em-disponible') as HTMLInputElement).checked = p.disponible;
+      (document.getElementById('em-destacado')  as HTMLInputElement).checked = p.destacado;
+      const catSel = document.getElementById('em-cat') as HTMLSelectElement;
+      catSel.value = p.categoria;
+
+      buildStringList('em-telas',  p.telas         ?? []);
+      buildStringList('em-caract', p.caracteristicas ?? []);
+      buildColorList(p.colores ?? []);
+
+      openModal();
+    });
+  });
+
+  // ── Botones add ───────────────────────────────────────
+  document.getElementById('em-telas-add')!.addEventListener('click',
+    () => addStringItem(document.getElementById('em-telas')!));
+  document.getElementById('em-caract-add')!.addEventListener('click',
+    () => addStringItem(document.getElementById('em-caract')!));
+  document.getElementById('em-colores-add')!.addEventListener('click',
+    () => addColorItem(document.getElementById('em-colores')!));
+
+  // ── Guardar ───────────────────────────────────────────
+  btnSave.addEventListener('click', async () => {
+    okMsg.hidden = errMsg.hidden = true;
+    btnSave.disabled = true;
+
+    const id = (document.getElementById('em-id') as HTMLInputElement).value;
+    const payload = {
+      nombre:          (document.getElementById('em-nombre')     as HTMLInputElement).value.trim(),
+      slug:            (document.getElementById('em-slug')       as HTMLInputElement).value.trim(),
+      tipo:            (document.getElementById('em-tipo')       as HTMLInputElement).value.trim(),
+      descripcion:     (document.getElementById('em-desc')       as HTMLTextAreaElement).value.trim(),
+      tiempoEntrega:   (document.getElementById('em-entrega')    as HTMLInputElement).value.trim(),
+      categoria_slug:  (document.getElementById('em-cat')        as HTMLSelectElement).value,
+      disponible:      (document.getElementById('em-disponible') as HTMLInputElement).checked ? 1 : 0,
+      destacado:       (document.getElementById('em-destacado')  as HTMLInputElement).checked ? 1 : 0,
+      telas:           JSON.stringify(getStringList('em-telas')),
+      caracteristicas: JSON.stringify(getStringList('em-caract')),
+      colores:         JSON.stringify(getColorList()),
+    };
+
+    try {
+      const res = await fetch(`/api/prendas/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        okMsg.hidden = false;
+        setTimeout(() => window.location.reload(), 900);
+      } else {
+        errMsg.hidden = false;
+      }
+    } catch {
+      errMsg.hidden = false;
+    } finally {
+      btnSave.disabled = false;
+    }
+  });
+
+  // ── Eliminar ──────────────────────────────────────────
+  btnDel.addEventListener('click', async () => {
+    if (!confirm('¿Eliminar esta prenda permanentemente? Esta acción no se puede deshacer.')) return;
+    const id = (document.getElementById('em-id') as HTMLInputElement).value;
+    try {
+      const res = await fetch(`/api/prendas/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        closeModal();
+        document.querySelector<HTMLElement>(`.adm-item[data-id="${id}"]`)?.remove();
+        const total = document.querySelectorAll('.adm-item:not(.hidden)').length;
+        if (counter) counter.textContent = `${total} prendas`;
+      } else {
+        alert('Error al eliminar.');
+      }
+    } catch {
+      alert('Error de conexión.');
+    }
+  });
+</script>

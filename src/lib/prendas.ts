@@ -51,3 +51,42 @@ export function getPrendaBySlug(slug: string): Prenda | null {
   ).get(slug) as Row | undefined;
   return row ? parse(row) : null;
 }
+
+// Admin: todas las prendas sin filtro de disponibilidad
+export function getAllPrendas(): Prenda[] {
+  return (db.prepare('SELECT * FROM prendas ORDER BY creadoEn DESC').all() as Row[]).map(parse);
+}
+
+export interface PrendaUpdate {
+  nombre:          string;
+  slug:            string;
+  descripcion:     string;
+  tipo:            string;
+  categoria_slug:  string;
+  destacado:       0 | 1;
+  disponible:      0 | 1;
+  colores:         string; // JSON
+  telas:           string; // JSON
+  caracteristicas: string; // JSON
+  tiempoEntrega:   string;
+}
+
+export function updatePrenda(id: string, d: PrendaUpdate): boolean {
+  const r = db.prepare(`
+    UPDATE prendas SET
+      nombre=?, slug=?, descripcion=?, tipo=?, categoria_slug=?,
+      destacado=?, disponible=?, colores=?, telas=?, caracteristicas=?,
+      tiempoEntrega=?, actualizadoEn=datetime('now')
+    WHERE id=?
+  `).run(
+    d.nombre, d.slug, d.descripcion, d.tipo, d.categoria_slug,
+    d.destacado, d.disponible, d.colores, d.telas, d.caracteristicas,
+    d.tiempoEntrega, id
+  );
+  return (r as { changes: number }).changes > 0;
+}
+
+export function deletePrenda(id: string): boolean {
+  const r = db.prepare('DELETE FROM prendas WHERE id=?').run(id);
+  return (r as { changes: number }).changes > 0;
+}
