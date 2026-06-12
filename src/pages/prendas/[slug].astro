@@ -6,15 +6,8 @@ const { slug } = Astro.params;
 const prenda = getPrendaBySlug(slug!);
 if (!prenda) return Astro.redirect('/catalogo');
 
-const MOCK_IMGS = [
-  'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=900&q=80',
-  'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=900&q=80',
-  'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=900&q=80',
-];
-const imagenPrincipal = [...prenda.imagenes].sort((a, b) => a.orden - b.orden)[0]?.url ?? null;
-const galeria = imagenPrincipal
-  ? [imagenPrincipal, ...MOCK_IMGS.slice(1)]
-  : MOCK_IMGS;
+const galeria = [...prenda.imagenes].sort((a, b) => a.orden - b.orden).map(i => i.url);
+const tieneFotos = galeria.length > 0;
 ---
 
 <Layout title={prenda.nombre}>
@@ -23,23 +16,23 @@ const galeria = imagenPrincipal
   <!-- ── Escena: imagen absoluta en el fondo ───────────────── -->
   <div class="dp-scene">
 
-    <!-- Imagen de fondo, nunca se corta -->
-    <div class="dp-img-wrap">
-      <img
-        id="dp-hero-img"
-        src={galeria[0]}
-        alt={prenda.nombre}
-        class="dp-img"
-        loading="eager"
-      />
-      <div class="dp-m-title">
-        <p class="dp-m-tipo">{prenda.tipo}</p>
-        <h2 class="dp-m-nombre">{prenda.nombre}</h2>
+    {tieneFotos && (
+      <div class="dp-img-wrap">
+        <img
+          id="dp-hero-img"
+          src={galeria[0]}
+          alt={prenda.nombre}
+          class="dp-img"
+          loading="eager"
+        />
+        <div class="dp-m-title">
+          <p class="dp-m-tipo">{prenda.tipo}</p>
+          <h2 class="dp-m-nombre">{prenda.nombre}</h2>
+        </div>
       </div>
-    </div>
+    )}
 
-    <!-- Velo: funde el bg desde la izquierda para que el texto sea legible -->
-    <div class="dp-veil"></div>
+    {tieneFotos && <div class="dp-veil"></div>}
 
     <!-- Contenido encima de todo -->
     <div class="dp-content">
@@ -83,56 +76,60 @@ const galeria = imagenPrincipal
         </div>
       )}
 
-      <div class="dp-section dp-section--last">
-        <span class="dp-label">Galería</span>
-        <div class="dp-strip-wrap">
-          <button class="dp-sbtn" id="dp-prev" disabled aria-label="Anterior">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <div class="dp-strip-clip">
-            <div class="dp-strip" id="dp-strip">
-              {galeria.map((url, i) => (
-                <button class="dp-thumb" data-idx={String(i)} aria-label={`Imagen ${i + 1}`}>
-                  <img src={url} alt={`${prenda.nombre} — imagen ${i + 1}`} loading="lazy" />
-                </button>
-              ))}
+      {galeria.length > 1 && (
+        <div class="dp-section dp-section--last">
+          <span class="dp-label">Galería</span>
+          <div class="dp-strip-wrap">
+            <button class="dp-sbtn" id="dp-prev" disabled aria-label="Anterior">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="dp-strip-clip">
+              <div class="dp-strip" id="dp-strip">
+                {galeria.slice(1).map((url, i) => (
+                  <button class="dp-thumb" data-idx={String(i + 1)} aria-label={`Imagen ${i + 2}`}>
+                    <img src={url} alt={`${prenda.nombre} — imagen ${i + 2}`} loading="lazy" />
+                  </button>
+                ))}
+              </div>
             </div>
+            <button class="dp-sbtn" id="dp-next" aria-label="Siguiente">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
           </div>
-          <button class="dp-sbtn" id="dp-next" aria-label="Siguiente">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
         </div>
-      </div>
+      )}
 
     </div><!-- /dp-content -->
   </div><!-- /dp-scene -->
 </div>
 
 <!-- ── Modal galería ─────────────────────────────────────── -->
-<div class="dp-modal" id="dp-modal" hidden role="dialog" aria-modal="true" aria-label={`Galería de ${prenda.nombre}`}>
-  <button class="dp-modal-close" id="dp-modal-close" aria-label="Cerrar">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-  </button>
-  <span class="dp-modal-counter" id="dp-modal-counter">1 / {galeria.length}</span>
-
-  <div class="dp-modal-body">
-    <button class="dp-modal-arrow" id="dp-modal-prev" aria-label="Anterior">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+{tieneFotos && (
+  <div class="dp-modal" id="dp-modal" hidden role="dialog" aria-modal="true" aria-label={`Galería de ${prenda.nombre}`}>
+    <button class="dp-modal-close" id="dp-modal-close" aria-label="Cerrar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
-    <img class="dp-modal-img" id="dp-modal-img" src={galeria[0]} alt={prenda.nombre} />
-    <button class="dp-modal-arrow" id="dp-modal-next" aria-label="Siguiente">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-    </button>
-  </div>
+    <span class="dp-modal-counter" id="dp-modal-counter">1 / {galeria.length}</span>
 
-  <div class="dp-modal-foot" id="dp-modal-thumbs">
-    {galeria.map((url, i) => (
-      <button class={`dp-modal-thumb${i === 0 ? ' dp-modal-thumb--on' : ''}`} data-idx={String(i)} aria-label={`Ir a imagen ${i + 1}`}>
-        <img src={url} alt="" loading="lazy" />
+    <div class="dp-modal-body">
+      <button class="dp-modal-arrow" id="dp-modal-prev" aria-label="Anterior">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
-    ))}
+      <img class="dp-modal-img" id="dp-modal-img" src={galeria[0]} alt={prenda.nombre} />
+      <button class="dp-modal-arrow" id="dp-modal-next" aria-label="Siguiente">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+
+    <div class="dp-modal-foot" id="dp-modal-thumbs">
+      {galeria.map((url, i) => (
+        <button class={`dp-modal-thumb${i === 0 ? ' dp-modal-thumb--on' : ''}`} data-idx={String(i)} aria-label={`Ir a imagen ${i + 1}`}>
+          <img src={url} alt="" loading="lazy" />
+        </button>
+      ))}
+    </div>
   </div>
-</div>
+)}
 </Layout>
 
 <style>
@@ -418,69 +415,73 @@ const galeria = imagenPrincipal
 </style>
 
 <script>
-  const strip   = document.getElementById('dp-strip')!;
-  const prevBtn = document.getElementById('dp-prev') as HTMLButtonElement;
-  const nextBtn = document.getElementById('dp-next') as HTMLButtonElement;
-  const thumbs  = [...strip.querySelectorAll<HTMLButtonElement>('.dp-thumb')];
-  const THUMB_W = () => (thumbs[0]?.offsetWidth ?? 88) + 10;
-  const VISIBLE = 3;
-  const TOTAL   = thumbs.length;
-  let   stripIdx = 0;
+  // ── Strip ────────────────────────────────────────────────
+  const stripEl  = document.getElementById('dp-strip');
+  if (stripEl) {
+    const prevBtn = document.getElementById('dp-prev') as HTMLButtonElement;
+    const nextBtn = document.getElementById('dp-next') as HTMLButtonElement;
+    const thumbs  = [...stripEl.querySelectorAll<HTMLButtonElement>('.dp-thumb')];
+    const THUMB_W = () => (thumbs[0]?.offsetWidth ?? 88) + 10;
+    const VISIBLE = 3;
+    const TOTAL   = thumbs.length;
+    let   stripIdx = 0;
 
-  function updateStrip() {
-    strip.style.transform = `translateX(-${stripIdx * THUMB_W()}px)`;
-    prevBtn.disabled = stripIdx === 0;
-    nextBtn.disabled = TOTAL <= VISIBLE || stripIdx >= TOTAL - VISIBLE;
+    function updateStrip() {
+      stripEl.style.transform = `translateX(-${stripIdx * THUMB_W()}px)`;
+      prevBtn.disabled = stripIdx === 0;
+      nextBtn.disabled = TOTAL <= VISIBLE || stripIdx >= TOTAL - VISIBLE;
+    }
+
+    prevBtn.addEventListener('click', () => { stripIdx = Math.max(0, stripIdx - 1); updateStrip(); });
+    nextBtn.addEventListener('click', () => { stripIdx = Math.min(TOTAL - VISIBLE, stripIdx + 1); updateStrip(); });
+    updateStrip();
+
+    thumbs.forEach((btn, i) => {
+      btn.addEventListener('click', () => openModal(i + 1)); // +1: galeria[0] es la principal
+    });
   }
-
-  prevBtn.addEventListener('click', () => { stripIdx = Math.max(0, stripIdx - 1); updateStrip(); });
-  nextBtn.addEventListener('click', () => { stripIdx = Math.min(TOTAL - VISIBLE, stripIdx + 1); updateStrip(); });
-  updateStrip();
-
-  // Click en thumbnail → abre modal (no cambia imagen de fondo)
-  thumbs.forEach((btn, i) => {
-    btn.addEventListener('click', () => openModal(i));
-  });
 
   // ── Modal ────────────────────────────────────────────────
-  const modal       = document.getElementById('dp-modal')!;
-  const modalImg    = document.getElementById('dp-modal-img') as HTMLImageElement;
-  const modalCtr    = document.getElementById('dp-modal-counter')!;
-  const modalThumbs = [...document.querySelectorAll<HTMLButtonElement>('.dp-modal-thumb')];
-  const URLS        = modalThumbs.map(t => t.querySelector('img')!.src);
-  let   modalIdx    = 0;
+  const modal = document.getElementById('dp-modal');
+  if (modal) {
+    const modalImg    = document.getElementById('dp-modal-img') as HTMLImageElement;
+    const modalCtr    = document.getElementById('dp-modal-counter')!;
+    const modalThumbs = [...document.querySelectorAll<HTMLButtonElement>('.dp-modal-thumb')];
+    const URLS        = modalThumbs.map(t => t.querySelector('img')!.src);
+    let   modalIdx    = 0;
 
-  function openModal(idx: number) {
-    modalIdx = idx; syncModal();
-    modal.removeAttribute('hidden');
-    document.body.style.overflow = 'hidden';
+    function openModal(idx: number) {
+      modalIdx = idx; syncModal();
+      modal!.removeAttribute('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      modal!.setAttribute('hidden', '');
+      document.body.style.overflow = '';
+    }
+    function syncModal() {
+      modalImg.style.animation = 'none';
+      void modalImg.offsetWidth;
+      modalImg.style.animation = '';
+      modalImg.src = URLS[modalIdx];
+      modalCtr.textContent = `${modalIdx + 1} / ${URLS.length}`;
+      modalThumbs.forEach((t, i) => t.classList.toggle('dp-modal-thumb--on', i === modalIdx));
+    }
+
+    function prevModal() { modalIdx = (modalIdx - 1 + URLS.length) % URLS.length; syncModal(); }
+    function nextModal() { modalIdx = (modalIdx + 1) % URLS.length; syncModal(); }
+
+    document.getElementById('dp-modal-close')!.addEventListener('click', closeModal);
+    document.getElementById('dp-modal-prev')!.addEventListener('click', prevModal);
+    document.getElementById('dp-modal-next')!.addEventListener('click', nextModal);
+    modalThumbs.forEach((t, i) => t.addEventListener('click', () => { modalIdx = i; syncModal(); }));
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+    document.addEventListener('keydown', e => {
+      if (modal!.hasAttribute('hidden')) return;
+      if (e.key === 'Escape')     closeModal();
+      if (e.key === 'ArrowLeft')  prevModal();
+      if (e.key === 'ArrowRight') nextModal();
+    });
   }
-  function closeModal() {
-    modal.setAttribute('hidden', '');
-    document.body.style.overflow = '';
-  }
-  function syncModal() {
-    modalImg.style.animation = 'none';
-    void modalImg.offsetWidth;
-    modalImg.style.animation = '';
-    modalImg.src = URLS[modalIdx];
-    modalCtr.textContent = `${modalIdx + 1} / ${URLS.length}`;
-    modalThumbs.forEach((t, i) => t.classList.toggle('dp-modal-thumb--on', i === modalIdx));
-  }
-
-  function prevModal() { modalIdx = (modalIdx - 1 + URLS.length) % URLS.length; syncModal(); }
-  function nextModal() { modalIdx = (modalIdx + 1) % URLS.length; syncModal(); }
-
-  document.getElementById('dp-modal-close')!.addEventListener('click', closeModal);
-  document.getElementById('dp-modal-prev')!.addEventListener('click', prevModal);
-  document.getElementById('dp-modal-next')!.addEventListener('click', nextModal);
-  modalThumbs.forEach((t, i) => t.addEventListener('click', () => { modalIdx = i; syncModal(); }));
-  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-
-  document.addEventListener('keydown', e => {
-    if (modal.hasAttribute('hidden')) return;
-    if (e.key === 'Escape')     closeModal();
-    if (e.key === 'ArrowLeft')  prevModal();
-    if (e.key === 'ArrowRight') nextModal();
-  });
 </script>
