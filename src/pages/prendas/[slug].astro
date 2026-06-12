@@ -20,10 +20,29 @@ const galeria = imagenPrincipal
 <Layout title={prenda.nombre}>
 <div class="dp">
 
-  <div class="dp-layout">
+  <!-- ── Escena: imagen absoluta en el fondo ───────────────── -->
+  <div class="dp-scene">
 
-    <!-- Columna izquierda: detalles -->
-    <div class="dp-left">
+    <!-- Imagen de fondo, nunca se corta -->
+    <div class="dp-img-wrap">
+      <img
+        id="dp-hero-img"
+        src={galeria[0]}
+        alt={prenda.nombre}
+        class="dp-img"
+        loading="eager"
+      />
+      <div class="dp-m-title">
+        <p class="dp-m-tipo">{prenda.tipo}</p>
+        <h2 class="dp-m-nombre">{prenda.nombre}</h2>
+      </div>
+    </div>
+
+    <!-- Velo: funde el bg desde la izquierda para que el texto sea legible -->
+    <div class="dp-veil"></div>
+
+    <!-- Contenido encima de todo -->
+    <div class="dp-content">
 
       <div class="dp-d-title">
         <h1 class="dp-nombre">{prenda.nombre}</h1>
@@ -73,8 +92,8 @@ const galeria = imagenPrincipal
           <div class="dp-strip-clip">
             <div class="dp-strip" id="dp-strip">
               {galeria.map((url, i) => (
-                <button class={`dp-thumb${i === 0 ? ' dp-thumb--on' : ''}`} data-idx={String(i)} aria-label={`Imagen ${i + 1}`}>
-                  <img src={url} alt={`${prenda.nombre} — imagen ${i + 1}`} loading={i === 0 ? 'eager' : 'lazy'} />
+                <button class="dp-thumb" data-idx={String(i)} aria-label={`Imagen ${i + 1}`}>
+                  <img src={url} alt={`${prenda.nombre} — imagen ${i + 1}`} loading="lazy" />
                 </button>
               ))}
             </div>
@@ -85,19 +104,8 @@ const galeria = imagenPrincipal
         </div>
       </div>
 
-    </div>
-
-    <!-- Columna derecha: imagen sticky (sin fondo diferente) -->
-    <div class="dp-right">
-      <div class="dp-grad"></div>
-      <img src={galeria[0]} alt={prenda.nombre} class="dp-hero-img" loading="eager" />
-      <div class="dp-m-title" aria-hidden="true">
-        <p class="dp-nombre">{prenda.nombre}</p>
-        <p class="dp-tipo">{prenda.tipo}</p>
-      </div>
-    </div>
-
-  </div>
+    </div><!-- /dp-content -->
+  </div><!-- /dp-scene -->
 </div>
 
 <!-- ── Modal galería ─────────────────────────────────────── -->
@@ -128,25 +136,62 @@ const galeria = imagenPrincipal
 </Layout>
 
 <style>
+/* ── Wrapper ────────────────────────────────────────────── */
 .dp {
   padding-top: 64px;
   background: var(--bg);
-  min-height: 100vh;
 }
 
-.dp-layout {
-  display: grid;
-  grid-template-columns: 43% 57%;
-  align-items: start;
+/* ── Escena: lienzo con imagen de fondo ─────────────────── */
+.dp-scene {
+  position: relative;
   min-height: calc(100vh - 64px);
+  overflow: hidden;
+  background: var(--bg);
 }
 
-/* ── Columna izquierda ─────────────────────────────────── */
-.dp-left {
-  padding: clamp(28px, 4vh, 52px) clamp(24px, 4vw, 52px);
-  padding-right: clamp(20px, 2.5vw, 36px);
+/* ── Imagen: absoluta en el fondo, nunca recortada ──────── */
+.dp-img-wrap { display: contents; }
+.dp-m-title  { display: none; }
+
+.dp-img {
+  position: absolute;
+  right: 20%; bottom: 0;
+  height: 95%;
+  width: auto;
+  max-width: 58%;
+  object-fit: contain;
+  object-position: bottom right;
+  z-index: 0;
+  pointer-events: none;
 }
 
+/* ── Velo: bg desvaneciéndose de izquierda a transparente ── */
+.dp-veil {
+  position: absolute;
+  inset: 0; z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    var(--bg)   0%,
+    var(--bg)   22%,
+    transparent 52%
+  );
+}
+
+/* ── Contenido encima ───────────────────────────────────── */
+.dp-content {
+  position: relative;
+  z-index: 2;
+  width: min(48%, 540px);
+  margin-left: 20%;
+  padding: clamp(28px, 4vh, 56px) clamp(16px, 2vw, 28px);
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Nombre + tipo ──────────────────────────────────────── */
 .dp-d-title { margin-bottom: 16px; }
 
 .dp-nombre {
@@ -160,15 +205,15 @@ const galeria = imagenPrincipal
   letter-spacing: .03em; margin: 0;
 }
 
+/* ── Descripción ────────────────────────────────────────── */
 .dp-desc {
   font-size: 15px; line-height: 1.7; color: var(--ink-soft);
   max-width: 400px; margin: 0 0 20px;
 }
 
-.dp-section {
-  margin-bottom: 18px;
-}
-.dp-section--last { margin-bottom: 0; }
+/* ── Secciones ──────────────────────────────────────────── */
+.dp-section { margin-bottom: 18px; }
+.dp-section--last { margin-bottom: 0; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: clamp(28px, 4vh, 52px); }
 
 .dp-label {
   display: block; font-size: 10.5px; font-weight: 700;
@@ -176,6 +221,7 @@ const galeria = imagenPrincipal
   color: var(--ink-soft); margin-bottom: 10px;
 }
 
+/* ── Colores ────────────────────────────────────────────── */
 .dp-colores { display: flex; flex-wrap: wrap; gap: 12px; }
 .dp-color-item { display: flex; align-items: center; gap: 8px; }
 .dp-swatch {
@@ -184,12 +230,14 @@ const galeria = imagenPrincipal
 }
 .dp-color-name { font-size: 14px; font-weight: 500; color: var(--ink); }
 
+/* ── Telas ──────────────────────────────────────────────── */
 .dp-telas { display: flex; flex-wrap: wrap; gap: 8px; }
 .dp-tela {
   font-size: 13px; font-weight: 500; color: var(--ink);
   background: var(--bg-secondary); border-radius: 999px; padding: 5px 14px;
 }
 
+/* ── Características ────────────────────────────────────── */
 .dp-lista { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 .dp-lista li {
   display: flex; align-items: flex-start; gap: 10px;
@@ -200,7 +248,7 @@ const galeria = imagenPrincipal
   background: var(--accent); flex-shrink: 0; margin-top: 6px;
 }
 
-/* ── Galería strip ─────────────────────────────────────── */
+/* ── Galería strip ──────────────────────────────────────── */
 .dp-strip-wrap { display: flex; align-items: center; gap: 10px; }
 .dp-strip-clip { flex: 1; overflow: hidden; }
 .dp-strip {
@@ -227,33 +275,6 @@ const galeria = imagenPrincipal
 }
 .dp-sbtn:hover { background: var(--bg-secondary); }
 .dp-sbtn:disabled { opacity: .3; cursor: default; }
-
-/* ── Columna derecha: imagen sticky, sin fondo diferente ── */
-.dp-right {
-  position: sticky; top: 64px;
-  height: calc(100vh - 64px);
-  overflow: hidden;
-  background: var(--bg);   /* mismo fondo que el panel izquierdo */
-}
-
-.dp-grad {
-  position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  background: linear-gradient(
-    to right,
-    var(--bg)    0%,
-    var(--bg)    6%,
-    transparent  28%
-  );
-}
-
-.dp-hero-img {
-  width: 100%; height: 100%;
-  object-fit: contain;
-  object-position: bottom center;
-  display: block;
-}
-
-.dp-m-title { display: none; }
 
 /* ── Modal ─────────────────────────────────────────────── */
 .dp-modal {
@@ -322,54 +343,111 @@ const galeria = imagenPrincipal
 .dp-modal-thumb--on { opacity: 1; border-color: rgba(255,255,255,.75); }
 .dp-modal-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-/* ── Responsive móvil ──────────────────────────────────── */
-@media (max-width: 880px) {
-  .dp-layout { grid-template-columns: 1fr; }
-
-  .dp-right {
-    position: relative; top: 0; height: 56svh; order: -1;
-  }
-
-  .dp-grad { display: none; }
-
-  .dp-d-title { display: block; }
-  .dp-left { padding: 28px clamp(20px, 5vw, 40px); }
-  .dp-desc { margin-bottom: 28px; padding-bottom: 24px; max-width: none; }
-  .dp-section { margin-bottom: 24px; padding-bottom: 24px; }
-  .dp-thumb { width: 76px; height: 98px; }
+/* ── Modal móvil ────────────────────────────────────────── */
+@media (max-width: 680px) {
+  .dp-modal-close { top: 12px; right: 12px; width: 36px; height: 36px; }
+  .dp-modal-counter { top: 18px; left: 14px; font-size: 12px; }
+  .dp-modal-body { gap: 6px; padding: 0 6px; }
+  .dp-modal-arrow { width: 34px; height: 34px; background: rgba(255,255,255,.18); }
+  .dp-modal-img { max-width: 92vw; max-height: 58vh; border-radius: 6px; }
+  .dp-modal-foot { gap: 6px; margin: 12px 0 18px; padding: 0 8px; }
+  .dp-modal-thumb { width: 40px; height: 52px; border-radius: 4px; }
 }
 
-@media (max-width: 420px) {
-  .dp-right { height: 50svh; }
-  .dp-thumb { width: 68px; height: 88px; }
+/* ── Responsive móvil ───────────────────────────────────── */
+@media (max-width: 680px) {
+  .dp-scene { min-height: unset; }
+
+  /* Wrap relativo para poder superponer el título */
+  .dp-img-wrap {
+    display: block;
+    position: relative;
+    height: 52svh;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* Imagen ocupa todo el wrap */
+  .dp-img {
+    position: relative;
+    right: unset; bottom: unset;
+    width: 100%; height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    object-position: bottom center;
+    pointer-events: auto;
+  }
+
+  /* Título superpuesto en esquina inferior izquierda de la imagen */
+  .dp-m-title {
+    display: block;
+    position: absolute;
+    bottom: 14px; left: 16px;
+    pointer-events: none;
+  }
+  .dp-m-tipo {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 4px;
+  }
+  .dp-m-nombre {
+    font-size: clamp(22px, 6vw, 32px);
+    font-weight: 300; letter-spacing: -.03em; line-height: .95;
+    color: var(--ink); margin: 0;
+  }
+
+  /* Oculta el título del panel de contenido en móvil */
+  .dp-d-title { display: none; }
+
+  /* Sin velo en móvil */
+  .dp-veil { display: none; }
+
+  /* Contenido a ancho completo debajo de la imagen */
+  .dp-content {
+    position: relative;
+    width: 100%;
+    margin-left: 0;
+    min-height: unset;
+    padding: 24px clamp(20px, 5vw, 36px) 40px;
+  }
+
+  .dp-desc { max-width: none; }
+  .dp-thumb { width: 76px; height: 98px; }
+  .dp-section--last { flex: unset; padding-bottom: 0; justify-content: unset; }
 }
 </style>
 
 <script>
-  const strip    = document.getElementById('dp-strip')!;
-  const prevBtn  = document.getElementById('dp-prev') as HTMLButtonElement;
-  const nextBtn  = document.getElementById('dp-next') as HTMLButtonElement;
-  const thumbs   = [...strip.querySelectorAll<HTMLButtonElement>('.dp-thumb')];
-  const THUMB_W  = () => (thumbs[0]?.offsetWidth ?? 88) + 10;
-  const VISIBLE  = 3;
-  const TOTAL    = thumbs.length;
+  const strip   = document.getElementById('dp-strip')!;
+  const prevBtn = document.getElementById('dp-prev') as HTMLButtonElement;
+  const nextBtn = document.getElementById('dp-next') as HTMLButtonElement;
+  const thumbs  = [...strip.querySelectorAll<HTMLButtonElement>('.dp-thumb')];
+  const THUMB_W = () => (thumbs[0]?.offsetWidth ?? 88) + 10;
+  const VISIBLE = 3;
+  const TOTAL   = thumbs.length;
   let   stripIdx = 0;
 
   function updateStrip() {
     strip.style.transform = `translateX(-${stripIdx * THUMB_W()}px)`;
     prevBtn.disabled = stripIdx === 0;
-    nextBtn.disabled = stripIdx >= TOTAL - VISIBLE;
+    nextBtn.disabled = TOTAL <= VISIBLE || stripIdx >= TOTAL - VISIBLE;
   }
 
   prevBtn.addEventListener('click', () => { stripIdx = Math.max(0, stripIdx - 1); updateStrip(); });
   nextBtn.addEventListener('click', () => { stripIdx = Math.min(TOTAL - VISIBLE, stripIdx + 1); updateStrip(); });
   updateStrip();
 
+  // Click en thumbnail → abre modal (no cambia imagen de fondo)
+  thumbs.forEach((btn, i) => {
+    btn.addEventListener('click', () => openModal(i));
+  });
+
+  // ── Modal ────────────────────────────────────────────────
   const modal       = document.getElementById('dp-modal')!;
   const modalImg    = document.getElementById('dp-modal-img') as HTMLImageElement;
   const modalCtr    = document.getElementById('dp-modal-counter')!;
   const modalThumbs = [...document.querySelectorAll<HTMLButtonElement>('.dp-modal-thumb')];
-  const URLS        = thumbs.map(t => t.querySelector('img')!.src);
+  const URLS        = modalThumbs.map(t => t.querySelector('img')!.src);
   let   modalIdx    = 0;
 
   function openModal(idx: number) {
@@ -393,7 +471,6 @@ const galeria = imagenPrincipal
   function prevModal() { modalIdx = (modalIdx - 1 + URLS.length) % URLS.length; syncModal(); }
   function nextModal() { modalIdx = (modalIdx + 1) % URLS.length; syncModal(); }
 
-  thumbs.forEach((t, i) => t.addEventListener('click', () => openModal(i)));
   document.getElementById('dp-modal-close')!.addEventListener('click', closeModal);
   document.getElementById('dp-modal-prev')!.addEventListener('click', prevModal);
   document.getElementById('dp-modal-next')!.addEventListener('click', nextModal);
